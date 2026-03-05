@@ -214,13 +214,14 @@ Only include events that have a clear date in the future. Extract up to 12 of th
 
     // Insert new events
     const eventsToInsert = extractedEvents.map(
-      (e: { title: string; date: string; location: string; category: string; source_url?: string }) => ({
+      (e: { title: string; date: string; location: string; category: string; source_url?: string; description?: string }) => ({
         title: e.title,
         date: e.date,
         location: e.location,
         category: e.category,
         emoji: EMOJI_MAP[e.category] || "🎉",
         source_url: e.source_url || null,
+        description: e.description || null,
         created_by: null, // scraped, not user-created
       })
     );

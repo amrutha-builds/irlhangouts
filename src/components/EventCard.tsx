@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { MapPin, Calendar, Users } from "lucide-react";
+import { MapPin, Calendar, Users, ExternalLink } from "lucide-react";
 
 interface Friend {
   name: string;

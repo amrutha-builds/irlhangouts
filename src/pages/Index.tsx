@@ -63,12 +63,24 @@ const events = [
   },
 ];
 
-const eventsWithFriends = events.map((e) => ({
-  ...e,
-  friends: friends.map((f, i) => ({ ...f, going: e.going[i] })),
-}));
-
 const Index = () => {
+  const [eventList, setEventList] = useState(events);
+
+  const eventsWithFriends = eventList.map((e) => ({
+    ...e,
+    friends: friends.map((f, i) => ({ ...f, going: e.going[i] })),
+  }));
+
+  const toggleRsvp = (eventIndex: number, friendIndex: number) => {
+    setEventList((prev) =>
+      prev.map((e, i) =>
+        i === eventIndex
+          ? { ...e, going: e.going.map((g, j) => (j === friendIndex ? !g : g)) }
+          : e
+      )
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}

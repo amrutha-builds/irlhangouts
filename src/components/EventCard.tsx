@@ -86,7 +86,7 @@ const EventCard = ({ title, date, location, category, emoji, friends, index, sou
 
         <button
           type="button"
-          onClick={onToggleRsvp}
+          onClick={(e) => { e.stopPropagation(); onToggleRsvp?.(); }}
           className={`w-full rounded-lg py-2 text-sm font-medium transition-all ${
             iAmGoing
               ? "bg-primary text-primary-foreground"

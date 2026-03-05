@@ -250,7 +250,6 @@ const Index = () => {
         event={selectedEventId ? eventsWithFriends.find((e) => e.id === selectedEventId) ?? null : null}
         onToggleRsvp={() => selectedEventId && toggleRsvp(selectedEventId)}
       />
-      </div>
     </div>
   );
 };

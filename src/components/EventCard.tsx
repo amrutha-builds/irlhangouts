@@ -15,9 +15,10 @@ interface EventCardProps {
   emoji: string;
   friends: Friend[];
   index: number;
+  onToggleRsvp?: (friendIndex: number) => void;
 }
 
-const EventCard = ({ title, date, location, category, emoji, friends, index }: EventCardProps) => {
+const EventCard = ({ title, date, location, category, emoji, friends, index, onToggleRsvp }: EventCardProps) => {
   const goingCount = friends.filter(f => f.going).length;
 
   return (

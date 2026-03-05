@@ -118,7 +118,7 @@ const Index = () => {
       <div className="mx-auto max-w-5xl px-4 pb-16">
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {eventsWithFriends.map((event, i) => (
-            <EventCard key={event.title} {...event} index={i} />
+            <EventCard key={event.title} {...event} index={i} onToggleRsvp={(friendIndex) => toggleRsvp(i, friendIndex)} />
           ))}
         </div>
       </div>

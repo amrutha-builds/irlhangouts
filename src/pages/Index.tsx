@@ -30,6 +30,7 @@ const Index = () => {
   const [rsvps, setRsvps] = useState<Record<string, Record<string, boolean>>>({});
   const [loading, setLoading] = useState(true);
   const [scraping, setScraping] = useState(false);
+  const [weekendOnly, setWeekendOnly] = useState(false);
 
   useEffect(() => {
     loadData();

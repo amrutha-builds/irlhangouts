@@ -5,6 +5,7 @@ interface Friend {
   name: string;
   emoji: string;
   going: boolean;
+  isCurrentUser?: boolean;
 }
 
 interface EventCardProps {
@@ -15,11 +16,13 @@ interface EventCardProps {
   emoji: string;
   friends: Friend[];
   index: number;
-  onToggleRsvp?: (friendIndex: number) => void;
+  onToggleRsvp?: () => void;
 }
 
 const EventCard = ({ title, date, location, category, emoji, friends, index, onToggleRsvp }: EventCardProps) => {
   const goingCount = friends.filter(f => f.going).length;
+  const currentUser = friends.find(f => f.isCurrentUser);
+  const iAmGoing = currentUser?.going ?? false;
 
   return (
     <motion.div
@@ -52,27 +55,31 @@ const EventCard = ({ title, date, location, category, emoji, friends, index, onT
       </div>
 
       <div className="border-t border-border pt-4">
-        <div className="mb-2 flex items-center gap-1 text-xs font-medium text-muted-foreground">
-          <Users className="h-3.5 w-3.5" />
-          <span>{goingCount}/5 going</span>
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+            <Users className="h-3.5 w-3.5" />
+            <span>{goingCount} going</span>
+          </div>
+          <div className="flex -space-x-1">
+            {friends.filter(f => f.going).map((f) => (
+              <span key={f.name} className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/15 text-xs ring-1 ring-primary">
+                {f.emoji}
+              </span>
+            ))}
+          </div>
         </div>
-        <div className="flex gap-1.5">
-          {friends.map((friend, fi) => (
-            <button
-              key={friend.name}
-              type="button"
-              onClick={() => onToggleRsvp?.(fi)}
-              title={`${friend.name} — ${friend.going ? "Going ✓" : "Not yet"} (click to toggle)`}
-              className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-sm transition-all hover:scale-110 ${
-                friend.going
-                  ? "bg-primary/15 ring-2 ring-primary"
-                  : "bg-muted opacity-50"
-              }`}
-            >
-              {friend.emoji}
-            </button>
-          ))}
-        </div>
+
+        <button
+          type="button"
+          onClick={onToggleRsvp}
+          className={`w-full rounded-lg py-2 text-sm font-medium transition-all ${
+            iAmGoing
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground hover:bg-accent"
+          }`}
+        >
+          {iAmGoing ? "I'm Going ✓" : "Count Me In"}
+        </button>
       </div>
     </motion.div>
   );

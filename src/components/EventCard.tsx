@@ -50,10 +50,22 @@ const EventCard = ({ title, date, location, category, emoji, friends, index, sou
         <Calendar className="h-4 w-4" />
         <span>{date}</span>
       </div>
-      <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
         <MapPin className="h-4 w-4" />
         <span>{location}</span>
       </div>
+      {source_url && (
+        <a
+          href={source_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-4 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+        >
+          <ExternalLink className="h-3 w-3" />
+          View / Get Tickets
+        </a>
+      )}
+      {!source_url && <div className="mb-4" />}
 
       <div className="border-t border-border pt-4">
         <div className="mb-3 flex items-center justify-between">

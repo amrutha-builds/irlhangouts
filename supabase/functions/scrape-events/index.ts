@@ -109,6 +109,7 @@ For each event, extract:
 - date: The date/time as a readable string (e.g. "Sat, Apr 5 · 8 PM")
 - location: The venue or location name
 - category: One of: ${CATEGORIES.join(", ")}
+- source_url: The direct URL to the event page or ticket purchase page from the source website
 
 Only include events that have a clear date in the future. Extract up to 12 of the best events.`;
 

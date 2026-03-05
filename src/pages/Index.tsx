@@ -30,6 +30,7 @@ const Index = () => {
   const [rsvps, setRsvps] = useState<Record<string, Record<string, boolean>>>({});
   const [loading, setLoading] = useState(true);
   const [scraping, setScraping] = useState(false);
+  const [weekendOnly, setWeekendOnly] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -106,7 +107,16 @@ const Index = () => {
     }
   };
 
-  const eventsWithFriends = events.map((event) => ({
+  const isWeekend = (dateStr: string) => {
+    const parsed = new Date(dateStr);
+    if (isNaN(parsed.getTime())) return false;
+    const day = parsed.getDay();
+    return day === 0 || day === 5 || day === 6;
+  };
+
+  const filteredEvents = weekendOnly ? events.filter((e) => isWeekend(e.date)) : events;
+
+  const eventsWithFriends = filteredEvents.map((event) => ({
     ...event,
     friends: profiles.map((p) => ({
       name: p.display_name,
@@ -177,6 +187,22 @@ const Index = () => {
             <span className="text-xs font-medium text-muted-foreground">{p.display_name}</span>
           </div>
         ))}
+      </div>
+
+      {/* Filter bar */}
+      <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 pb-4">
+        <button
+          onClick={() => setWeekendOnly(false)}
+          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${!weekendOnly ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"}`}
+        >
+          All Events
+        </button>
+        <button
+          onClick={() => setWeekendOnly(true)}
+          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${weekendOnly ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"}`}
+        >
+          🎉 Weekends Only
+        </button>
       </div>
 
       {/* Events grid */}

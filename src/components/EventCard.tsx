@@ -16,6 +16,7 @@ interface EventCardProps {
   emoji: string;
   friends: Friend[];
   index: number;
+  source_url?: string | null;
   onToggleRsvp?: () => void;
 }
 

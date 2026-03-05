@@ -110,6 +110,7 @@ For each event, extract:
 - location: The venue or location name
 - category: One of: ${CATEGORIES.join(", ")}
 - source_url: The direct URL to the event page or ticket purchase page from the source website
+- description: A 1-2 sentence summary of the event — what it is, what to expect, and why it's fun
 
 Only include events that have a clear date in the future. Extract up to 12 of the best events.`;
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import heroImage from "@/assets/hero-girlfriends.jpg";
 import EventCard from "@/components/EventCard";
+import EventDetailDialog from "@/components/EventDetailDialog";
 import { Sparkles, RefreshCw, LogOut } from "lucide-react";
 import AddEventDialog from "@/components/AddEventDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +17,7 @@ interface DbEvent {
   category: string;
   emoji: string;
   source_url: string | null;
+  description: string | null;
 }
 
 interface Profile {
@@ -33,6 +35,7 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [scraping, setScraping] = useState(false);
   const [weekendOnly, setWeekendOnly] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -233,11 +236,20 @@ const Index = () => {
                 {...event}
                 index={i}
                 onToggleRsvp={() => toggleRsvp(event.id)}
+                onClick={() => setSelectedEventId(event.id)}
               />
             ))}
           </div>
         )}
       </div>
+
+      {/* Event detail dialog */}
+      <EventDetailDialog
+        open={!!selectedEventId}
+        onOpenChange={(open) => !open && setSelectedEventId(null)}
+        event={selectedEventId ? eventsWithFriends.find((e) => e.id === selectedEventId) ?? null : null}
+        onToggleRsvp={() => selectedEventId && toggleRsvp(selectedEventId)}
+      />
     </div>
   );
 };

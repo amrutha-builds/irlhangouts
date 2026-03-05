@@ -17,10 +17,12 @@ interface EventCardProps {
   friends: Friend[];
   index: number;
   source_url?: string | null;
+  description?: string | null;
   onToggleRsvp?: () => void;
+  onClick?: () => void;
 }
 
-const EventCard = ({ title, date, location, category, emoji, friends, index, source_url, onToggleRsvp }: EventCardProps) => {
+const EventCard = ({ title, date, location, category, emoji, friends, index, source_url, onToggleRsvp, onClick }: EventCardProps) => {
   const goingCount = friends.filter(f => f.going).length;
   const currentUser = friends.find(f => f.isCurrentUser);
   const iAmGoing = currentUser?.going ?? false;
@@ -30,10 +32,11 @@ const EventCard = ({ title, date, location, category, emoji, friends, index, sou
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1, duration: 0.5 }}
-      className="group rounded-2xl bg-card p-6 transition-all duration-300"
+      className="group cursor-pointer rounded-2xl bg-card p-6 transition-all duration-300"
       style={{ boxShadow: "var(--shadow-card)" }}
       onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "var(--shadow-card-hover)")}
       onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "var(--shadow-card)")}
+      onClick={onClick}
     >
       <div className="mb-4 flex items-start justify-between">
         <span className="text-4xl">{emoji}</span>
@@ -84,7 +87,7 @@ const EventCard = ({ title, date, location, category, emoji, friends, index, sou
 
         <button
           type="button"
-          onClick={onToggleRsvp}
+          onClick={(e) => { e.stopPropagation(); onToggleRsvp?.(); }}
           className={`w-full rounded-lg py-2 text-sm font-medium transition-all ${
             iAmGoing
               ? "bg-primary text-primary-foreground"

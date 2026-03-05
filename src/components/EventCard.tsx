@@ -22,7 +22,7 @@ interface EventCardProps {
   onClick?: () => void;
 }
 
-const EventCard = ({ title, date, location, category, emoji, friends, index, source_url, onToggleRsvp }: EventCardProps) => {
+const EventCard = ({ title, date, location, category, emoji, friends, index, source_url, onToggleRsvp, onClick }: EventCardProps) => {
   const goingCount = friends.filter(f => f.going).length;
   const currentUser = friends.find(f => f.isCurrentUser);
   const iAmGoing = currentUser?.going ?? false;

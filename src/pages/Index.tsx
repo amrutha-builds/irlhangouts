@@ -15,6 +15,7 @@ interface DbEvent {
   location: string;
   category: string;
   emoji: string;
+  source_url: string | null;
 }
 
 interface Profile {

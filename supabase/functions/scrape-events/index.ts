@@ -109,6 +109,7 @@ For each event, extract:
 - date: The date/time as a readable string (e.g. "Sat, Apr 5 · 8 PM")
 - location: The venue or location name
 - category: One of: ${CATEGORIES.join(", ")}
+- source_url: The direct URL to the event page or ticket purchase page from the source website
 
 Only include events that have a clear date in the future. Extract up to 12 of the best events.`;
 
@@ -150,6 +151,7 @@ Only include events that have a clear date in the future. Extract up to 12 of th
                             type: "string",
                             enum: CATEGORIES,
                           },
+                          source_url: { type: "string", description: "Direct URL to the event page or ticket purchase page" },
                         },
                         required: ["title", "date", "location", "category"],
                         additionalProperties: false,
@@ -210,12 +212,13 @@ Only include events that have a clear date in the future. Extract up to 12 of th
 
     // Insert new events
     const eventsToInsert = extractedEvents.map(
-      (e: { title: string; date: string; location: string; category: string }) => ({
+      (e: { title: string; date: string; location: string; category: string; source_url?: string }) => ({
         title: e.title,
         date: e.date,
         location: e.location,
         category: e.category,
         emoji: EMOJI_MAP[e.category] || "🎉",
+        source_url: e.source_url || null,
         created_by: null, // scraped, not user-created
       })
     );

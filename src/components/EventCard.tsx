@@ -17,7 +17,9 @@ interface EventCardProps {
   friends: Friend[];
   index: number;
   source_url?: string | null;
+  description?: string | null;
   onToggleRsvp?: () => void;
+  onClick?: () => void;
 }
 
 const EventCard = ({ title, date, location, category, emoji, friends, index, source_url, onToggleRsvp }: EventCardProps) => {

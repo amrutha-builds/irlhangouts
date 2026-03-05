@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import heroImage from "@/assets/hero-girlfriends.jpg";
 import EventCard from "@/components/EventCard";
+import EventDetailDialog from "@/components/EventDetailDialog";
 import { Sparkles, RefreshCw, LogOut } from "lucide-react";
 import AddEventDialog from "@/components/AddEventDialog";
 import { supabase } from "@/integrations/supabase/client";

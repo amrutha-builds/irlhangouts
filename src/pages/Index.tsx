@@ -107,7 +107,16 @@ const Index = () => {
     }
   };
 
-  const eventsWithFriends = events.map((event) => ({
+  const isWeekend = (dateStr: string) => {
+    const parsed = new Date(dateStr);
+    if (isNaN(parsed.getTime())) return false;
+    const day = parsed.getDay();
+    return day === 0 || day === 5 || day === 6;
+  };
+
+  const filteredEvents = weekendOnly ? events.filter((e) => isWeekend(e.date)) : events;
+
+  const eventsWithFriends = filteredEvents.map((event) => ({
     ...event,
     friends: profiles.map((p) => ({
       name: p.display_name,

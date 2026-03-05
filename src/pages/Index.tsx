@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import heroImage from "@/assets/hero-girlfriends.jpg";
 import EventCard from "@/components/EventCard";
@@ -62,12 +63,24 @@ const events = [
   },
 ];
 
-const eventsWithFriends = events.map((e) => ({
-  ...e,
-  friends: friends.map((f, i) => ({ ...f, going: e.going[i] })),
-}));
-
 const Index = () => {
+  const [eventList, setEventList] = useState(events);
+
+  const eventsWithFriends = eventList.map((e) => ({
+    ...e,
+    friends: friends.map((f, i) => ({ ...f, going: e.going[i] })),
+  }));
+
+  const toggleRsvp = (eventIndex: number, friendIndex: number) => {
+    setEventList((prev) =>
+      prev.map((e, i) =>
+        i === eventIndex
+          ? { ...e, going: e.going.map((g, j) => (j === friendIndex ? !g : g)) }
+          : e
+      )
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
@@ -117,7 +130,7 @@ const Index = () => {
       <div className="mx-auto max-w-5xl px-4 pb-16">
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {eventsWithFriends.map((event, i) => (
-            <EventCard key={event.title} {...event} index={i} />
+            <EventCard key={event.title} {...event} index={i} onToggleRsvp={(friendIndex) => toggleRsvp(i, friendIndex)} />
           ))}
         </div>
       </div>

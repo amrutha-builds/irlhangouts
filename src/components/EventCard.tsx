@@ -15,9 +15,10 @@ interface EventCardProps {
   emoji: string;
   friends: Friend[];
   index: number;
+  onToggleRsvp?: (friendIndex: number) => void;
 }
 
-const EventCard = ({ title, date, location, category, emoji, friends, index }: EventCardProps) => {
+const EventCard = ({ title, date, location, category, emoji, friends, index, onToggleRsvp }: EventCardProps) => {
   const goingCount = friends.filter(f => f.going).length;
 
   return (
@@ -56,18 +57,20 @@ const EventCard = ({ title, date, location, category, emoji, friends, index }: E
           <span>{goingCount}/5 going</span>
         </div>
         <div className="flex gap-1.5">
-          {friends.map((friend) => (
-            <span
+          {friends.map((friend, fi) => (
+            <button
               key={friend.name}
-              title={`${friend.name} — ${friend.going ? "Going ✓" : "Not yet"}`}
-              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm transition-all ${
+              type="button"
+              onClick={() => onToggleRsvp?.(fi)}
+              title={`${friend.name} — ${friend.going ? "Going ✓" : "Not yet"} (click to toggle)`}
+              className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-sm transition-all hover:scale-110 ${
                 friend.going
                   ? "bg-primary/15 ring-2 ring-primary"
                   : "bg-muted opacity-50"
               }`}
             >
               {friend.emoji}
-            </span>
+            </button>
           ))}
         </div>
       </div>

@@ -150,6 +150,7 @@ Only include events that have a clear date in the future. Extract up to 12 of th
                             type: "string",
                             enum: CATEGORIES,
                           },
+                          source_url: { type: "string", description: "Direct URL to the event page or ticket purchase page" },
                         },
                         required: ["title", "date", "location", "category"],
                         additionalProperties: false,

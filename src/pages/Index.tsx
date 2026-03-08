@@ -186,12 +186,25 @@ const Index = () => {
 
       {/* Squad bar */}
       <div className="flex items-center justify-center gap-3 py-6">
-        {profiles.map((p) => (
+      {profiles.map((p) => (
           <div key={p.id} className="flex flex-col items-center gap-1">
             <span className={`flex h-10 w-10 items-center justify-center rounded-full bg-accent text-lg ring-2 ${p.id === user?.id ? "ring-primary" : "ring-primary/30"}`}>
               {p.emoji}
             </span>
             <span className="text-xs font-medium text-muted-foreground">{p.display_name}</span>
+            {p.id === user?.id ? (
+              <PersonalityQuiz
+                currentType={p.personality_type}
+                onComplete={async (type) => {
+                  await supabase.from("profiles").update({ personality_type: type }).eq("id", user.id);
+                  setProfiles((prev) => prev.map((pr) => pr.id === user.id ? { ...pr, personality_type: type } : pr));
+                }}
+              />
+            ) : p.personality_type ? (
+              <span className="mt-0.5 rounded-full bg-accent/60 px-2 py-0.5 text-[10px] font-medium text-accent-foreground">
+                {p.personality_type.replace("The ", "")}
+              </span>
+            ) : null}
           </div>
         ))}
       </div>

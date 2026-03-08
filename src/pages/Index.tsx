@@ -25,6 +25,7 @@ interface Profile {
   id: string;
   display_name: string;
   emoji: string;
+  personality_type: string | null;
 }
 
 const Index = () => {

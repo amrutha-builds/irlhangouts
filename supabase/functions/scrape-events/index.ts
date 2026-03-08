@@ -124,8 +124,8 @@ Deno.serve(async (req) => {
       console.error("Error crawling Eventbrite:", e);
     }
 
-    // Scrape remaining non-Eventbrite sources
-    const OTHER_URLS = SCRAPE_URLS.filter((u) => !u.includes("eventbrite.com"));
+    // Scrape remaining non-Eventbrite-weekend sources (Eventbrite next-week + Sulekha)
+    const OTHER_URLS = SCRAPE_URLS.filter((u) => u !== EVENTBRITE_URL);
     for (const url of OTHER_URLS) {
       try {
         console.log(`Scraping: ${url}`);

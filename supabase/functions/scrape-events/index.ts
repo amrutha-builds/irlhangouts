@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
     const scrapeResults: string[] = [];
 
     // Crawl Eventbrite to get multiple event pages
-    const EVENTBRITE_URL = "https://www.eventbrite.com/d/ca--san-francisco/events/";
+    const EVENTBRITE_URL = "https://www.eventbrite.com/d/ca--san-francisco/events--this-weekend/";
     try {
       console.log(`Crawling Eventbrite: ${EVENTBRITE_URL}`);
       const crawlResp = await fetch("https://api.firecrawl.dev/v1/crawl", {

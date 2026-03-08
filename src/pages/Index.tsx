@@ -5,6 +5,7 @@ import EventCard from "@/components/EventCard";
 import EventDetailDialog from "@/components/EventDetailDialog";
 import { Sparkles, RefreshCw, LogOut } from "lucide-react";
 import AddEventDialog from "@/components/AddEventDialog";
+import PersonalityQuiz from "@/components/PersonalityQuiz";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";

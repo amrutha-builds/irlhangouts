@@ -5,9 +5,8 @@ const corsHeaders = {
 };
 
 const SCRAPE_URLS = [
-  "https://www.eventbrite.com/d/ca--san-francisco/events/",
-  "https://www.timeout.com/san-francisco/things-to-do/best-events-in-san-francisco",
-  "https://www.meetup.com/find/?location=us--ca--San%20Francisco&source=EVENTS",
+  "https://www.eventbrite.com/d/ca--san-francisco/events--this-weekend/",
+  "https://www.eventbrite.com/d/ca--san-francisco/events--next-week/",
   "https://www.sulekha.com/san-francisco-bay-area/events",
 ];
 
@@ -60,7 +59,7 @@ Deno.serve(async (req) => {
     const scrapeResults: string[] = [];
 
     // Crawl Eventbrite to get multiple event pages
-    const EVENTBRITE_URL = "https://www.eventbrite.com/d/ca--san-francisco/events/";
+    const EVENTBRITE_URL = "https://www.eventbrite.com/d/ca--san-francisco/events--this-weekend/";
     try {
       console.log(`Crawling Eventbrite: ${EVENTBRITE_URL}`);
       const crawlResp = await fetch("https://api.firecrawl.dev/v1/crawl", {
@@ -125,8 +124,8 @@ Deno.serve(async (req) => {
       console.error("Error crawling Eventbrite:", e);
     }
 
-    // Scrape remaining non-Eventbrite sources
-    const OTHER_URLS = SCRAPE_URLS.filter((u) => !u.includes("eventbrite.com"));
+    // Scrape remaining non-Eventbrite-weekend sources (Eventbrite next-week + Sulekha)
+    const OTHER_URLS = SCRAPE_URLS.filter((u) => u !== EVENTBRITE_URL);
     for (const url of OTHER_URLS) {
       try {
         console.log(`Scraping: ${url}`);
@@ -169,7 +168,17 @@ Deno.serve(async (req) => {
 
     // Step 2: Use AI to extract structured events
     console.log("Extracting events with AI...");
-    const systemPrompt = `You are an event extraction assistant. Extract upcoming events from the scraped web content below. Focus on events in the San Francisco Bay Area that would be fun for a group of girlfriends. Include events across all categories: nightlife & dining, arts & culture, wellness & outdoors, entertainment, social gatherings.
+    const today = new Date();
+    const twoWeeksOut = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
+    const systemPrompt = `You are an event extraction assistant. Extract upcoming IN-PERSON events from the scraped web content below.
+
+STRICT FILTERS — only include events that meet ALL of these criteria:
+1. Located in the San Francisco Bay Area (SF, Oakland, Berkeley, San Jose, Peninsula, etc.)
+2. In-person / physical events only — exclude virtual, online, or livestream events
+3. Happening on a Friday, Saturday, or Sunday within the next two weeks (${today.toLocaleDateString()} to ${twoWeeksOut.toLocaleDateString()})
+4. Would be fun for a group of girlfriends
+
+Include events across all categories: nightlife & dining, arts & culture, wellness & outdoors, entertainment, social gatherings.
 
 For each event, extract:
 - title: The event name
@@ -179,7 +188,7 @@ For each event, extract:
 - source_url: The direct URL to the event page or ticket purchase page from the source website
 - description: A 1-2 sentence summary of the event — what it is, what to expect, and why it's fun
 
-Only include events that have a clear date in the future. Extract up to 12 of the best events.`;
+Extract up to 15 of the best events. Exclude any event that doesn't clearly state an in-person location.`;
 
     const aiResp = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",

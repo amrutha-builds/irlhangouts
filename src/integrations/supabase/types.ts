@@ -59,18 +59,21 @@ export type Database = {
           display_name: string
           emoji: string
           id: string
+          personality_type: string | null
         }
         Insert: {
           created_at?: string
           display_name: string
           emoji?: string
           id: string
+          personality_type?: string | null
         }
         Update: {
           created_at?: string
           display_name?: string
           emoji?: string
           id?: string
+          personality_type?: string | null
         }
         Relationships: []
       }

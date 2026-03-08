@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN personality_type text DEFAULT NULL;

@@ -5,9 +5,8 @@ const corsHeaders = {
 };
 
 const SCRAPE_URLS = [
-  "https://www.eventbrite.com/d/ca--san-francisco/events/",
-  "https://www.timeout.com/san-francisco/things-to-do/best-events-in-san-francisco",
-  "https://www.meetup.com/find/?location=us--ca--San%20Francisco&source=EVENTS",
+  "https://www.eventbrite.com/d/ca--san-francisco/events--this-weekend/",
+  "https://www.eventbrite.com/d/ca--san-francisco/events--next-week/",
   "https://www.sulekha.com/san-francisco-bay-area/events",
 ];
 

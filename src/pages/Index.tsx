@@ -56,10 +56,14 @@ const DashboardContent = () => {
 
   const loadData = async () => {
     setLoading(true);
+    const rsvpQuery = activeSquadId
+      ? supabase.from("rsvps").select("*").eq("squad_id", activeSquadId)
+      : supabase.from("rsvps").select("*");
+
     const [eventsRes, profilesRes, rsvpsRes] = await Promise.all([
       supabase.from("events").select("*").order("created_at", { ascending: false }),
       supabase.from("profiles").select("*"),
-      supabase.from("rsvps").select("*"),
+      rsvpQuery,
     ]);
 
     if (eventsRes.data) setEvents(eventsRes.data);

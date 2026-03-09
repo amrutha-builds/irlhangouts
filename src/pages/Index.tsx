@@ -84,7 +84,13 @@ const DashboardContent = () => {
 
     if (eventsRes.data) setEvents(eventsRes.data);
     if (profilesRes.data) setProfiles(profilesRes.data);
-    if (myRsvpsRes.data) setMyRsvps(myRsvpsRes.data as any);
+    if (myRsvpsRes.data) {
+      setMyRsvps(
+        (myRsvpsRes.data as any[])
+          .filter((r: any) => r.squad_id)
+          .map((r: any) => ({ event_id: r.event_id, squad_id: r.squad_id, going: r.going }))
+      );
+    }
 
     const rsvpMap: Record<string, Record<string, boolean>> = {};
     if (rsvpsRes.data) {

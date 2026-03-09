@@ -32,6 +32,7 @@ interface Profile {
 const Index = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  useSquadSetup(user?.id);
   const [events, setEvents] = useState<DbEvent[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [rsvps, setRsvps] = useState<Record<string, Record<string, boolean>>>({});

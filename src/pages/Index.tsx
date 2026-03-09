@@ -110,7 +110,7 @@ const DashboardContent = () => {
     const { error } = await supabase
       .from("rsvps")
       .upsert(
-        { event_id: eventId, user_id: user.id, going: newGoing, squad_id: activeSquadId } as any,
+        { event_id: eventId, user_id: user.id, going: newGoing, squad_id: effectiveSquadId } as any,
         { onConflict: "event_id,user_id,squad_id" }
       );
 

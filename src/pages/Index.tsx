@@ -236,7 +236,7 @@ const DashboardContent = () => {
               <div className="mb-3 flex items-center justify-center gap-2">
                 <Sparkles className="h-5 w-5 text-primary-foreground" />
                 <span className="text-sm font-medium tracking-widest uppercase text-primary-foreground/80" style={{ fontFamily: "var(--font-body)" }}>
-                  {squads.find((s) => s.id === activeSquadId)?.name || "Squad Events"}
+                  {isMyPlansView ? "My Plans" : (squads.find((s) => s.id === activeView)?.name || "Squad Events")}
                 </span>
                 <Sparkles className="h-5 w-5 text-primary-foreground" />
               </div>

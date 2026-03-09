@@ -59,75 +59,7 @@ Deno.serve(async (req) => {
     console.log("Scraping event sources...");
     const scrapeResults: string[] = [];
 
-    // Crawl Eventbrite to get multiple event pages
-    const EVENTBRITE_URL = "https://www.eventbrite.com/d/ca--san-francisco/events--this-weekend/";
-    try {
-      console.log(`Crawling Eventbrite: ${EVENTBRITE_URL}`);
-      const crawlResp = await fetch("https://api.firecrawl.dev/v1/crawl", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          url: EVENTBRITE_URL,
-          limit: 10,
-          maxDepth: 1,
-          includePaths: ["/e/*"],
-          scrapeOptions: {
-            formats: ["markdown"],
-            onlyMainContent: true,
-          },
-        }),
-      });
-
-      if (crawlResp.ok) {
-        const crawlData = await crawlResp.json();
-        // Crawl returns async - check if we got data directly or need to poll
-        if (crawlData?.status === "completed" && crawlData?.data) {
-          for (const page of crawlData.data) {
-            const md = page?.markdown || "";
-            if (md) {
-              const sourceUrl = page?.metadata?.sourceURL || EVENTBRITE_URL;
-              scrapeResults.push(`--- Source: ${sourceUrl} ---\n${md.slice(0, 3000)}`);
-            }
-          }
-        } else if (crawlData?.id) {
-          // Poll for crawl completion
-          const crawlId = crawlData.id;
-          let attempts = 0;
-          while (attempts < 12) {
-            await new Promise((r) => setTimeout(r, 5000));
-            attempts++;
-            const pollResp = await fetch(`https://api.firecrawl.dev/v1/crawl/${crawlId}`, {
-              headers: { Authorization: `Bearer ${FIRECRAWL_API_KEY}` },
-            });
-            if (pollResp.ok) {
-              const pollData = await pollResp.json();
-              if (pollData?.status === "completed" && pollData?.data) {
-                for (const page of pollData.data) {
-                  const md = page?.markdown || "";
-                  if (md) {
-                    const sourceUrl = page?.metadata?.sourceURL || EVENTBRITE_URL;
-                    scrapeResults.push(`--- Source: ${sourceUrl} ---\n${md.slice(0, 3000)}`);
-                  }
-                }
-                break;
-              }
-            }
-          }
-        }
-        console.log(`Eventbrite crawl yielded ${scrapeResults.length} pages`);
-      } else {
-        console.error(`Failed to crawl Eventbrite: ${crawlResp.status}`);
-      }
-    } catch (e) {
-      console.error("Error crawling Eventbrite:", e);
-    }
-
-    // Scrape remaining non-Eventbrite-weekend sources (Eventbrite next-week + Sulekha)
-    const OTHER_URLS = SCRAPE_URLS.filter((u) => u !== EVENTBRITE_URL);
-    for (const url of OTHER_URLS) {
+    for (const url of SCRAPE_URLS) {
       try {
         console.log(`Scraping: ${url}`);
         const scrapeResp = await fetch("https://api.firecrawl.dev/v1/scrape", {
@@ -140,7 +72,7 @@ Deno.serve(async (req) => {
             url,
             formats: ["markdown"],
             onlyMainContent: true,
-            waitFor: 3000,
+            waitFor: 5000,
           }),
         });
 
@@ -149,8 +81,9 @@ Deno.serve(async (req) => {
           const markdown = scrapeData?.data?.markdown || scrapeData?.markdown || "";
           if (markdown) {
             scrapeResults.push(
-              `--- Source: ${url} ---\n${markdown.slice(0, 4000)}`
+              `--- Source: ${url} ---\n${markdown.slice(0, 5000)}`
             );
+            console.log(`Got ${markdown.length} chars from ${url}`);
           }
         } else {
           console.error(`Failed to scrape ${url}: ${scrapeResp.status}`);

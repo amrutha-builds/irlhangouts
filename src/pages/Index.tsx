@@ -407,18 +407,6 @@ const DashboardContent = () => {
           onToggleRsvp={() => selectedEventId && !isMyPlansView && toggleRsvp(selectedEventId)}
         />
 
-        <SquadPickerDialog
-          open={pendingJoinSquads.length > 0}
-          squads={pendingJoinSquads}
-          onSelect={async (id) => {
-            const squad = pendingJoinSquads.find((s) => s.id === id);
-            if (squad) {
-              await joinPendingSquad(squad);
-              reloadSquads();
-            }
-          }}
-          onClose={dismissPicker}
-        />
       </div>
     </div>
   );

@@ -5,9 +5,10 @@ const corsHeaders = {
 };
 
 const SCRAPE_URLS = [
+  "https://www.sulekha.com/san-francisco-bay-area/events",
+  "https://www.sulekha.com/san-francisco-bay-area/events?page=2",
   "https://www.eventbrite.com/d/ca--san-francisco/events--this-weekend/",
   "https://www.eventbrite.com/d/ca--san-francisco/events--next-week/",
-  "https://www.sulekha.com/san-francisco-bay-area/events",
 ];
 
 const CATEGORIES = [

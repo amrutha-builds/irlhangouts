@@ -40,6 +40,7 @@ const DashboardContent = () => {
   const [events, setEvents] = useState<DbEvent[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [rsvps, setRsvps] = useState<Record<string, Record<string, boolean>>>({});
+  const [myRsvps, setMyRsvps] = useState<{ event_id: string; squad_id: string; going: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
   const [scraping, setScraping] = useState(false);
   const [weekendOnly, setWeekendOnly] = useState(false);

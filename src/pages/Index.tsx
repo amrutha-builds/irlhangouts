@@ -275,7 +275,7 @@ const Index = () => {
 
             {/* Remaining events */}
             <div>
-              {eventsWithFriends.filter((e) => e.friends.some((f) => f.isCurrentUser && f.going)).length > 0 && (
+              {eventsWithFriends.filter((e) => e.friends.some((f) => f.going)).length > 0 && (
                 <h2 className="mb-4 text-lg font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
                   🗓️ More Events
                 </h2>

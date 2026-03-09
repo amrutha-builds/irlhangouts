@@ -252,14 +252,14 @@ const Index = () => {
         ) : (
           <>
             {/* RSVP'd events section */}
-            {eventsWithFriends.filter((e) => e.friends.some((f) => f.isCurrentUser && f.going)).length > 0 && (
+            {eventsWithFriends.filter((e) => e.friends.some((f) => f.going)).length > 0 && (
               <div className="mb-10">
                 <h2 className="mb-4 text-lg font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
-                  ✅ You're Going
+                  🔥 Popular with the Squad
                 </h2>
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                   {eventsWithFriends
-                    .filter((e) => e.friends.some((f) => f.isCurrentUser && f.going))
+                    .filter((e) => e.friends.some((f) => f.going))
                     .map((event, i) => (
                       <EventCard
                         key={event.id}
@@ -275,14 +275,14 @@ const Index = () => {
 
             {/* Remaining events */}
             <div>
-              {eventsWithFriends.filter((e) => e.friends.some((f) => f.isCurrentUser && f.going)).length > 0 && (
+              {eventsWithFriends.filter((e) => e.friends.some((f) => f.going)).length > 0 && (
                 <h2 className="mb-4 text-lg font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
                   🗓️ More Events
                 </h2>
               )}
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {eventsWithFriends
-                  .filter((e) => !e.friends.some((f) => f.isCurrentUser && f.going))
+                  .filter((e) => !e.friends.some((f) => f.going))
                   .map((event, i) => (
                     <EventCard
                       key={event.id}

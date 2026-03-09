@@ -61,14 +61,21 @@ const DashboardContent = () => {
       ? supabase.from("rsvps").select("*").eq("squad_id", activeSquadId)
       : supabase.from("rsvps").select("*");
 
-    const [eventsRes, profilesRes, rsvpsRes] = await Promise.all([
+    // Also fetch current user's RSVPs across ALL squads
+    const myRsvpQuery = user
+      ? supabase.from("rsvps").select("event_id,squad_id,going").eq("user_id", user.id).eq("going", true)
+      : null;
+
+    const [eventsRes, profilesRes, rsvpsRes, myRsvpsRes] = await Promise.all([
       supabase.from("events").select("*").order("created_at", { ascending: false }),
       supabase.from("profiles").select("*"),
       rsvpQuery,
+      myRsvpQuery ?? Promise.resolve({ data: [] }),
     ]);
 
     if (eventsRes.data) setEvents(eventsRes.data);
     if (profilesRes.data) setProfiles(profilesRes.data);
+    if (myRsvpsRes.data) setMyRsvps(myRsvpsRes.data as any);
 
     const rsvpMap: Record<string, Record<string, boolean>> = {};
     if (rsvpsRes.data) {

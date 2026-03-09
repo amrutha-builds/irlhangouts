@@ -164,7 +164,25 @@ const DashboardContent = () => {
       return bCount - aCount;
     });
 
-  return (
+  // Build "My Plans" - events user RSVP'd to across all squads
+  const myRsvpEventIds = [...new Set(myRsvps.map((r) => r.event_id))];
+  const myRsvpEvents = myRsvpEventIds
+    .map((eventId) => {
+      const event = events.find((e) => e.id === eventId);
+      if (!event) return null;
+      const rsvpSquadIds = myRsvps.filter((r) => r.event_id === eventId).map((r) => r.squad_id);
+      const squadNames = rsvpSquadIds
+        .map((sid) => squads.find((s) => s.id === sid)?.name)
+        .filter(Boolean);
+      return {
+        ...event,
+        squadTag: squadNames.join(", "),
+        friends: [] as { name: string; emoji: string; going: boolean; isCurrentUser?: boolean }[],
+      };
+    })
+    .filter(Boolean) as (DbEvent & { squadTag: string; friends: { name: string; emoji: string; going: boolean; isCurrentUser?: boolean }[] })[];
+
+
     <div className="flex min-h-screen w-full">
       <SquadSidebar
         squads={squads}

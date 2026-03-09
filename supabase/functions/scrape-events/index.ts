@@ -5,10 +5,13 @@ const corsHeaders = {
 };
 
 const SCRAPE_URLS = [
-  "https://www.sulekha.com/san-francisco-bay-area/events",
-  "https://www.sulekha.com/san-francisco-bay-area/events?page=2",
   "https://www.eventbrite.com/d/ca--san-francisco/events--this-weekend/",
   "https://www.eventbrite.com/d/ca--san-francisco/events--next-week/",
+];
+
+const SEARCH_QUERIES = [
+  "site:sulekha.com San Francisco Bay Area events this weekend 2026",
+  "site:sulekha.com San Francisco Bay Area events next weekend 2026",
 ];
 
 const CATEGORIES = [
@@ -55,10 +58,11 @@ Deno.serve(async (req) => {
       throw new Error("Supabase config missing");
     }
 
-    // Step 1: Scrape all sources with Firecrawl
+    // Step 1: Scrape & search event sources
     console.log("Scraping event sources...");
     const scrapeResults: string[] = [];
 
+    // Scrape Eventbrite listing pages
     for (const url of SCRAPE_URLS) {
       try {
         console.log(`Scraping: ${url}`);
@@ -72,7 +76,7 @@ Deno.serve(async (req) => {
             url,
             formats: ["markdown"],
             onlyMainContent: true,
-            waitFor: 5000,
+            waitFor: 3000,
           }),
         });
 
@@ -81,7 +85,7 @@ Deno.serve(async (req) => {
           const markdown = scrapeData?.data?.markdown || scrapeData?.markdown || "";
           if (markdown) {
             scrapeResults.push(
-              `--- Source: ${url} ---\n${markdown.slice(0, 5000)}`
+              `--- Source: ${url} ---\n${markdown.slice(0, 8000)}`
             );
             console.log(`Got ${markdown.length} chars from ${url}`);
           }
@@ -90,6 +94,47 @@ Deno.serve(async (req) => {
         }
       } catch (e) {
         console.error(`Error scraping ${url}:`, e);
+      }
+    }
+
+    // Search for Sulekha events (their site is JS-heavy, search works better)
+    for (const query of SEARCH_QUERIES) {
+      try {
+        console.log(`Searching: ${query}`);
+        const searchResp = await fetch("https://api.firecrawl.dev/v1/search", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            query,
+            limit: 10,
+            scrapeOptions: {
+              formats: ["markdown"],
+              onlyMainContent: true,
+            },
+          }),
+        });
+
+        if (searchResp.ok) {
+          const searchData = await searchResp.json();
+          const results = searchData?.data || [];
+          for (const result of results) {
+            const md = result?.markdown || "";
+            const resultUrl = result?.url || "";
+            if (md && md.length > 100) {
+              scrapeResults.push(
+                `--- Source: ${resultUrl} (Sulekha) ---\n${md.slice(0, 5000)}`
+              );
+            }
+          }
+          console.log(`Search "${query}" yielded ${results.length} results`);
+        } else {
+          console.error(`Failed to search: ${searchResp.status}`);
+        }
+      } catch (e) {
+        console.error(`Error searching:`, e);
       }
     }
 

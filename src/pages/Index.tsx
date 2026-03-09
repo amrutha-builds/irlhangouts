@@ -64,6 +64,13 @@ const DashboardContent = () => {
     if (user?.id) reloadSquads();
   }, [user?.id]);
 
+  // Default to first squad view when squads load and no view selected
+  useEffect(() => {
+    if (!activeView && squads.length > 0) {
+      setActiveView(squads[0].id);
+    }
+  }, [squads, activeView]);
+
   const loadData = async () => {
     setLoading(true);
     const rsvpQuery = effectiveSquadId

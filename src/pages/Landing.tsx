@@ -1,20 +1,19 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, ArrowRight, Copy, Check, Users, UserPlus, Plus } from "lucide-react";
+import { motion } from "framer-motion";
+import { Sparkles, ArrowRight, Copy, Check, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-
-type Step = "hero" | "choose" | "create" | "join" | "done";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Landing = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [step, setStep] = useState<Step>("hero");
   const [squadName, setSquadName] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [codeError, setCodeError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [created, setCreated] = useState(false);
 
   if (user) {
     navigate("/dashboard", { replace: true });
@@ -24,320 +23,141 @@ const Landing = () => {
   const handleCreateSquad = (e: React.FormEvent) => {
     e.preventDefault();
     const code = inviteCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-    if (code.length < 4) {
-      setCodeError("Code must be at least 4 characters");
-      return;
-    }
-    if (code.length > 20) {
-      setCodeError("Code must be 20 characters or less");
-      return;
-    }
+    if (code.length < 4) { setCodeError("Code must be at least 4 characters"); return; }
+    if (code.length > 20) { setCodeError("Code must be 20 characters or less"); return; }
     if (!squadName.trim()) return;
-
-    sessionStorage.setItem("pending_squad", JSON.stringify({
-      name: squadName.trim(),
-      invite_code: code,
-    }));
+    sessionStorage.setItem("pending_squad", JSON.stringify({ name: squadName.trim(), invite_code: code }));
     setInviteCode(code);
-    setStep("done");
+    setCreated(true);
   };
 
   const handleJoinSquad = (e: React.FormEvent) => {
     e.preventDefault();
     const code = joinCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-    if (code.length < 4) {
-      setCodeError("Code must be at least 4 characters");
-      return;
-    }
+    if (code.length < 4) { setCodeError("Code must be at least 4 characters"); return; }
     sessionStorage.setItem("join_squad_code", code);
     navigate("/auth");
   };
 
   const handleCopy = () => {
-    const shareUrl = `${window.location.origin}/join/${inviteCode}`;
-    navigator.clipboard.writeText(shareUrl);
+    navigator.clipboard.writeText(`${window.location.origin}/join/${inviteCode}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const backButton = (to: Step) => (
-    <button
-      onClick={() => { setStep(to); setCodeError(""); }}
-      className="mb-6 text-sm font-medium text-muted-foreground hover:text-foreground"
-    >
-      ← Back
-    </button>
-  );
+  if (created) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex w-full max-w-sm flex-col items-center gap-6 text-center"
+        >
+          <span className="text-5xl">🎉</span>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
+              Squad Ready!
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">Share this link with your crew</p>
+          </div>
+          <div className="w-full rounded-xl border border-border bg-card p-4">
+            <p className="mb-2 text-xs font-medium text-muted-foreground">Share Link</p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 truncate rounded-lg bg-muted px-3 py-2 text-sm font-medium text-foreground">
+                {window.location.origin}/join/{inviteCode}
+              </code>
+              <button onClick={handleCopy} className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90">
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+          <button onClick={() => navigate("/auth")} className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-medium text-primary-foreground hover:bg-primary/90">
+            Sign Up to Continue <ArrowRight className="h-4 w-4" />
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-      <AnimatePresence mode="wait">
-        {step === "hero" && (
-          <motion.div
-            key="hero"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="flex max-w-md flex-col items-center gap-6 text-center"
-          >
-            <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10">
-              <Users className="h-10 w-10 text-primary" />
-            </div>
-            <div>
-              <div className="mb-2 flex items-center justify-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
-                <span className="text-sm font-medium tracking-widest uppercase text-muted-foreground">
-                  Squad Events
-                </span>
-                <Sparkles className="h-5 w-5 text-primary" />
-              </div>
-              <h1
-                className="text-4xl font-bold tracking-tight text-foreground md:text-5xl"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                Girls' Night Agenda
-              </h1>
-              <p className="mt-3 text-muted-foreground">
-                Discover events, RSVP with your crew, and never miss a night out ✨
-              </p>
-            </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex w-full max-w-md flex-col items-center gap-8"
+      >
+        {/* Header */}
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+            <Users className="h-8 w-8 text-primary" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-xs font-medium tracking-widest uppercase text-muted-foreground">Squad Events</span>
+            <Sparkles className="h-4 w-4 text-primary" />
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
+            Girls' Night Agenda
+          </h1>
+          <p className="text-sm text-muted-foreground">Discover events, RSVP with your crew, and never miss a night out ✨</p>
+        </div>
 
-            <div className="flex w-full flex-col gap-3">
-              <button
-                onClick={() => setStep("choose")}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-lg font-semibold text-primary-foreground transition-all hover:bg-primary/90"
-              >
-                Hook My Squad Up
-                <ArrowRight className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => navigate("/auth")}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Already have a squad? Sign in
-              </button>
-            </div>
-          </motion.div>
-        )}
+        {/* Tabs */}
+        <Tabs defaultValue="create" className="w-full" onValueChange={() => setCodeError("")}>
+          <TabsList className="grid w-full grid-cols-2 rounded-xl">
+            <TabsTrigger value="create" className="rounded-lg">Create Squad</TabsTrigger>
+            <TabsTrigger value="join" className="rounded-lg">Join Squad</TabsTrigger>
+          </TabsList>
 
-        {step === "choose" && (
-          <motion.div
-            key="choose"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="w-full max-w-sm"
-          >
-            {backButton("hero")}
-
-            <h2
-              className="mb-2 text-2xl font-bold text-foreground"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              What's the move?
-            </h2>
-            <p className="mb-6 text-sm text-muted-foreground">
-              Start a new squad or join one your friend already created
-            </p>
-
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={() => setStep("create")}
-                className="flex w-full items-center gap-4 rounded-2xl border border-border bg-card p-5 text-left transition-all hover:border-primary/50 hover:shadow-md"
-              >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                  <Plus className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground">Create a Squad</p>
-                  <p className="text-sm text-muted-foreground">Start a new group & invite your girls</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => setStep("join")}
-                className="flex w-full items-center gap-4 rounded-2xl border border-border bg-card p-5 text-left transition-all hover:border-primary/50 hover:shadow-md"
-              >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent/50">
-                  <UserPlus className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground">Join a Squad</p>
-                  <p className="text-sm text-muted-foreground">Enter an invite code from a friend</p>
-                </div>
-              </button>
-            </div>
-          </motion.div>
-        )}
-
-        {step === "create" && (
-          <motion.div
-            key="create"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="w-full max-w-sm"
-          >
-            {backButton("choose")}
-
-            <h2
-              className="mb-2 text-2xl font-bold text-foreground"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Create Your Squad
-            </h2>
-            <p className="mb-6 text-sm text-muted-foreground">
-              Pick a name and a custom invite code your friends will use to join
-            </p>
-
+          <TabsContent value="create" className="mt-4">
             <form onSubmit={handleCreateSquad} className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">
-                  Squad Name
-                </label>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">Squad Name</label>
                 <input
-                  type="text"
-                  value={squadName}
-                  onChange={(e) => setSquadName(e.target.value)}
-                  placeholder="The Fab Five"
-                  maxLength={50}
+                  type="text" value={squadName} onChange={(e) => setSquadName(e.target.value)}
+                  placeholder="The Fab Five" maxLength={50} required autoFocus
                   className="w-full rounded-xl border border-border bg-card px-4 py-3 text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                  required
-                  autoFocus
                 />
               </div>
-
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">
-                  Invite Code
-                </label>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">Invite Code</label>
                 <input
-                  type="text"
-                  value={inviteCode}
-                  onChange={(e) => {
-                    setInviteCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));
-                    setCodeError("");
-                  }}
-                  placeholder="GIRLSNIGHT"
-                  maxLength={20}
+                  type="text" value={inviteCode}
+                  onChange={(e) => { setInviteCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")); setCodeError(""); }}
+                  placeholder="GIRLSNIGHT" maxLength={20} required
                   className="w-full rounded-xl border border-border bg-card px-4 py-3 text-center text-lg font-medium tracking-widest uppercase text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                  required
                 />
-                {codeError && (
-                  <p className="mt-1 text-sm text-destructive">{codeError}</p>
-                )}
+                {codeError && <p className="mt-1 text-sm text-destructive">{codeError}</p>}
               </div>
-
-              <button
-                type="submit"
-                className="w-full rounded-xl bg-primary py-3 font-medium text-primary-foreground transition-all hover:bg-primary/90"
-              >
+              <button type="submit" className="w-full rounded-xl bg-primary py-3 font-medium text-primary-foreground hover:bg-primary/90">
                 Create Squad ✨
               </button>
             </form>
-          </motion.div>
-        )}
+          </TabsContent>
 
-        {step === "join" && (
-          <motion.div
-            key="join"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="w-full max-w-sm"
-          >
-            {backButton("choose")}
-
-            <h2
-              className="mb-2 text-2xl font-bold text-foreground"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Join a Squad
-            </h2>
-            <p className="mb-6 text-sm text-muted-foreground">
-              Enter the invite code your friend shared with you
-            </p>
-
+          <TabsContent value="join" className="mt-4">
             <form onSubmit={handleJoinSquad} className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">
-                  Invite Code
-                </label>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">Invite Code</label>
                 <input
-                  type="text"
-                  value={joinCode}
-                  onChange={(e) => {
-                    setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));
-                    setCodeError("");
-                  }}
-                  placeholder="GIRLSNIGHT"
-                  maxLength={20}
+                  type="text" value={joinCode}
+                  onChange={(e) => { setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")); setCodeError(""); }}
+                  placeholder="GIRLSNIGHT" maxLength={20} required autoFocus
                   className="w-full rounded-xl border border-border bg-card px-4 py-3 text-center text-lg font-medium tracking-widest uppercase text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                  required
-                  autoFocus
                 />
-                {codeError && (
-                  <p className="mt-1 text-sm text-destructive">{codeError}</p>
-                )}
+                {codeError && <p className="mt-1 text-sm text-destructive">{codeError}</p>}
               </div>
-
-              <button
-                type="submit"
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-medium text-primary-foreground transition-all hover:bg-primary/90"
-              >
-                Join Squad
-                <ArrowRight className="h-4 w-4" />
+              <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-medium text-primary-foreground hover:bg-primary/90">
+                Join Squad <ArrowRight className="h-4 w-4" />
               </button>
             </form>
-          </motion.div>
-        )}
+          </TabsContent>
+        </Tabs>
 
-        {step === "done" && (
-          <motion.div
-            key="done"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="flex w-full max-w-sm flex-col items-center gap-6 text-center"
-          >
-            <span className="text-5xl">🎉</span>
-            <div>
-              <h2
-                className="text-2xl font-bold text-foreground"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                Squad Ready!
-              </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Share this link with your crew so they can join
-              </p>
-            </div>
-
-            <div className="w-full rounded-xl border border-border bg-card p-4">
-              <p className="mb-2 text-xs font-medium text-muted-foreground">Share Link</p>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 truncate rounded-lg bg-muted px-3 py-2 text-sm font-medium text-foreground">
-                  {window.location.origin}/join/{inviteCode}
-                </code>
-                <button
-                  onClick={handleCopy}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-all hover:bg-primary/90"
-                >
-                  {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              onClick={() => navigate("/auth")}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-medium text-primary-foreground transition-all hover:bg-primary/90"
-            >
-              Sign Up to Continue
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        <button onClick={() => navigate("/auth")} className="text-sm font-medium text-muted-foreground hover:text-foreground">
+          Already have a squad? Sign in
+        </button>
+      </motion.div>
     </div>
   );
 };

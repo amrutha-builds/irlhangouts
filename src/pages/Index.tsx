@@ -247,33 +247,35 @@ const DashboardContent = () => {
           </div>
         </div>
 
-        {/* Squad bar */}
-        <div className="flex items-center justify-center gap-3 py-6">
-          {squadProfiles.map((p) => (
-            <div key={p.id} className="flex flex-col items-center gap-1">
-              <span className={`flex h-10 w-10 items-center justify-center rounded-full bg-accent text-lg ring-2 ${p.id === user?.id ? "ring-primary" : "ring-primary/30"}`}>
-                {p.emoji}
-              </span>
-              <span className="text-xs font-medium text-muted-foreground">{p.display_name}</span>
-              {p.id === user?.id ? (
-                <PersonalityQuiz
-                  currentType={p.personality_type}
-                  onComplete={async (type) => {
-                    await supabase.from("profiles").update({ personality_type: type }).eq("id", user.id);
-                    setProfiles((prev) => prev.map((pr) => pr.id === user.id ? { ...pr, personality_type: type } : pr));
-                  }}
-                />
-              ) : p.personality_type ? (
-                <span className="mt-0.5 rounded-full bg-accent/60 px-2 py-0.5 text-[10px] font-medium text-accent-foreground">
-                  {p.personality_type.replace("The ", "")}
+        {/* Squad bar - only in squad view */}
+        {!isMyPlansView && (
+          <div className="flex items-center justify-center gap-3 py-6">
+            {squadProfiles.map((p) => (
+              <div key={p.id} className="flex flex-col items-center gap-1">
+                <span className={`flex h-10 w-10 items-center justify-center rounded-full bg-accent text-lg ring-2 ${p.id === user?.id ? "ring-primary" : "ring-primary/30"}`}>
+                  {p.emoji}
                 </span>
-              ) : null}
-            </div>
-          ))}
-          {squadProfiles.length === 0 && !loading && (
-            <p className="text-sm text-muted-foreground">No squad selected</p>
-          )}
-        </div>
+                <span className="text-xs font-medium text-muted-foreground">{p.display_name}</span>
+                {p.id === user?.id ? (
+                  <PersonalityQuiz
+                    currentType={p.personality_type}
+                    onComplete={async (type) => {
+                      await supabase.from("profiles").update({ personality_type: type }).eq("id", user.id);
+                      setProfiles((prev) => prev.map((pr) => pr.id === user.id ? { ...pr, personality_type: type } : pr));
+                    }}
+                  />
+                ) : p.personality_type ? (
+                  <span className="mt-0.5 rounded-full bg-accent/60 px-2 py-0.5 text-[10px] font-medium text-accent-foreground">
+                    {p.personality_type.replace("The ", "")}
+                  </span>
+                ) : null}
+              </div>
+            ))}
+            {squadProfiles.length === 0 && !loading && (
+              <p className="text-sm text-muted-foreground">No squad selected</p>
+            )}
+          </div>
+        )}
 
         {/* Filter bar */}
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 pb-4">
@@ -291,14 +293,41 @@ const DashboardContent = () => {
               🎉 Weekends Only
             </button>
           </div>
-          <AddEventDialog onEventAdded={loadData} />
+          {!isMyPlansView && <AddEventDialog onEventAdded={loadData} />}
         </div>
 
         {/* Events */}
         <div className="mx-auto w-full max-w-5xl px-4 pb-16">
-
           {loading ? (
             <div className="flex items-center justify-center py-20 text-muted-foreground">Loading events...</div>
+          ) : isMyPlansView ? (
+            /* My Plans view */
+            myRsvpEvents.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
+                <span className="text-5xl">📋</span>
+                <p className="text-lg text-muted-foreground">No plans yet!</p>
+                <p className="text-sm text-muted-foreground">RSVP to events from a squad to see them here</p>
+              </div>
+            ) : (
+              <div>
+                <h2 className="mb-4 text-lg font-semibold text-foreground">📋 Events I'm Going To</h2>
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {myRsvpEvents.map((event, i) => (
+                    <div key={`${event.id}-${event.squadTag}`} className="relative">
+                      <span className="absolute top-3 right-3 z-10 rounded-full bg-primary/90 px-2.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
+                        {event.squadTag}
+                      </span>
+                      <EventCard
+                        {...event}
+                        index={i}
+                        onToggleRsvp={() => {}}
+                        onClick={() => setSelectedEventId(event.id)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
           ) : events.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
               <p className="text-lg text-muted-foreground">No events yet!</p>
@@ -360,8 +389,8 @@ const DashboardContent = () => {
         <EventDetailDialog
           open={!!selectedEventId}
           onOpenChange={(open) => !open && setSelectedEventId(null)}
-          event={selectedEventId ? eventsWithFriends.find((e) => e.id === selectedEventId) ?? null : null}
-          onToggleRsvp={() => selectedEventId && toggleRsvp(selectedEventId)}
+          event={selectedEventId ? [...eventsWithFriends, ...myRsvpEvents].find((e) => e.id === selectedEventId) ?? null : null}
+          onToggleRsvp={() => selectedEventId && !isMyPlansView && toggleRsvp(selectedEventId)}
         />
       </div>
     </div>

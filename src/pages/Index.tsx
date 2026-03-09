@@ -267,6 +267,32 @@ const DashboardContent = () => {
 
         {/* Events */}
         <div className="mx-auto w-full max-w-5xl px-4 pb-16">
+          {/* My Plans - RSVPs across all squads */}
+          {!loading && myRsvpEvents.length > 0 && (
+            <div className="mb-10">
+              <h2 className="mb-4 text-lg font-semibold text-foreground">
+                📋 My Plans
+              </h2>
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {myRsvpEvents.map((event, i) => (
+                  <div key={`${event.id}-${event.squadTag}`} className="relative">
+                    {event.squadTag && (
+                      <span className="absolute top-3 right-3 z-10 rounded-full bg-primary/90 px-2.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
+                        {event.squadTag}
+                      </span>
+                    )}
+                    <EventCard
+                      {...event}
+                      index={i}
+                      onToggleRsvp={() => toggleRsvp(event.id)}
+                      onClick={() => setSelectedEventId(event.id)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div className="flex items-center justify-center py-20 text-muted-foreground">Loading events...</div>
           ) : events.length === 0 ? (

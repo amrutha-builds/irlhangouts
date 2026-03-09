@@ -72,7 +72,7 @@ const DashboardContent = () => {
 
     // Also fetch current user's RSVPs across ALL squads
     const myRsvpQuery = user
-      ? supabase.from("rsvps").select("event_id,squad_id,going").eq("user_id", user.id).eq("going", true)
+      ? supabase.from("rsvps").select("*").eq("user_id", user.id).eq("going", true)
       : null;
 
     const [eventsRes, profilesRes, rsvpsRes, myRsvpsRes] = await Promise.all([

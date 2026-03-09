@@ -142,8 +142,8 @@ const Landing = () => {
                 <input
                   type="text" value={joinCode}
                   onChange={(e) => {setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));setCodeError("");}}
-                  placeholder="GIRLSNIGHT" maxLength={20} required autoFocus
-                  className="w-full rounded-xl border border-border bg-card px-4 py-3 text-center text-lg font-medium tracking-widest uppercase text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                  maxLength={20} required autoFocus
+                  className="w-full rounded-xl border border-border bg-card px-4 py-3 text-center text-lg font-medium tracking-widest uppercase text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Create an invite code" />
                 
                 {codeError && <p className="mt-1 text-sm text-destructive">{codeError}</p>}
               </div>

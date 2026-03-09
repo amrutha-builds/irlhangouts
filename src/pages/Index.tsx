@@ -252,7 +252,7 @@ const Index = () => {
         ) : (
           <>
             {/* RSVP'd events section */}
-            {eventsWithFriends.filter((e) => e.friends.some((f) => f.isCurrentUser && f.going)).length > 0 && (
+            {eventsWithFriends.filter((e) => e.friends.some((f) => f.going)).length > 0 && (
               <div className="mb-10">
                 <h2 className="mb-4 text-lg font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
                   ✅ You're Going

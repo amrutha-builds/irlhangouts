@@ -37,7 +37,7 @@ const DashboardContent = () => {
   const { toast } = useToast();
   useSquadSetup(user?.id);
   const { squads, activeSquadId, setActiveSquadId, squadMemberIds, reload: reloadSquads } = useSquads(user?.id);
-  const [activeView, setActiveView] = useState<string>("my-plans");
+  const [activeView, setActiveView] = useState<string | null>(null);
   const [events, setEvents] = useState<DbEvent[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [rsvps, setRsvps] = useState<Record<string, Record<string, boolean>>>({});

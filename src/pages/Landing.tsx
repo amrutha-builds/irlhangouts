@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Sparkles, ArrowRight, Copy, Check, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";

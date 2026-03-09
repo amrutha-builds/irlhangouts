@@ -259,7 +259,7 @@ const Index = () => {
                 </h2>
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                   {eventsWithFriends
-                    .filter((e) => e.friends.some((f) => f.isCurrentUser && f.going))
+                    .filter((e) => e.friends.some((f) => f.going))
                     .map((event, i) => (
                       <EventCard
                         key={event.id}

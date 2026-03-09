@@ -83,6 +83,7 @@ export type Database = {
           event_id: string
           going: boolean
           id: string
+          squad_id: string | null
           user_id: string
         }
         Insert: {
@@ -90,6 +91,7 @@ export type Database = {
           event_id: string
           going?: boolean
           id?: string
+          squad_id?: string | null
           user_id: string
         }
         Update: {
@@ -97,6 +99,7 @@ export type Database = {
           event_id?: string
           going?: boolean
           id?: string
+          squad_id?: string | null
           user_id?: string
         }
         Relationships: [
@@ -105,6 +108,13 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rsvps_squad_id_fkey"
+            columns: ["squad_id"]
+            isOneToOne: false
+            referencedRelation: "squads"
             referencedColumns: ["id"]
           },
         ]

@@ -168,7 +168,7 @@ For each event, extract:
 - source_url: The direct URL to the event page or ticket purchase page from the source website
 - description: A 1-2 sentence summary of the event — what it is, what to expect, and why it's fun
 
-Extract up to 25 of the best events. Prioritize Sulekha events. Exclude any event that doesn't clearly state an in-person location.`;
+Extract up to 40 of the best events. Prioritize variety across categories. Exclude any event that doesn't clearly state an in-person location.`;
 
     const aiResp = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",

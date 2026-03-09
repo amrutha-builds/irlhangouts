@@ -47,7 +47,7 @@ const DashboardContent = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [activeSquadId]);
 
   // Reload squads after squad setup completes
   useEffect(() => {
@@ -56,10 +56,14 @@ const DashboardContent = () => {
 
   const loadData = async () => {
     setLoading(true);
+    const rsvpQuery = activeSquadId
+      ? supabase.from("rsvps").select("*").eq("squad_id", activeSquadId)
+      : supabase.from("rsvps").select("*");
+
     const [eventsRes, profilesRes, rsvpsRes] = await Promise.all([
       supabase.from("events").select("*").order("created_at", { ascending: false }),
       supabase.from("profiles").select("*"),
-      supabase.from("rsvps").select("*"),
+      rsvpQuery,
     ]);
 
     if (eventsRes.data) setEvents(eventsRes.data);
@@ -77,7 +81,7 @@ const DashboardContent = () => {
   };
 
   const toggleRsvp = async (eventId: string) => {
-    if (!user) return;
+    if (!user || !activeSquadId) return;
     const currentlyGoing = rsvps[eventId]?.[user.id] ?? false;
     const newGoing = !currentlyGoing;
 
@@ -89,8 +93,8 @@ const DashboardContent = () => {
     const { error } = await supabase
       .from("rsvps")
       .upsert(
-        { event_id: eventId, user_id: user.id, going: newGoing },
-        { onConflict: "event_id,user_id" }
+        { event_id: eventId, user_id: user.id, going: newGoing, squad_id: activeSquadId } as any,
+        { onConflict: "event_id,user_id,squad_id" }
       );
 
     if (error) {

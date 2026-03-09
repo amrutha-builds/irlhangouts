@@ -5,7 +5,6 @@ const corsHeaders = {
 };
 
 const SCRAPE_URLS = [
-  "https://www.eventbrite.com/d/ca--san-jose/all-events/?distance=50mi",
   "https://www.eventbrite.com/d/ca--san-jose/events--this-weekend/?distance=50mi",
   "https://www.eventbrite.com/d/ca--san-jose/events--next-week/?distance=50mi",
 ];
@@ -155,7 +154,7 @@ Deno.serve(async (req) => {
 STRICT FILTERS — only include events that meet ALL of these criteria:
 1. Located within 50 miles of San Jose, CA (includes San Jose, San Francisco, Oakland, Berkeley, Palo Alto, Mountain View, Santa Cruz, Fremont, etc.)
 2. In-person / physical events only — exclude virtual, online, or livestream events
-3. Happening within the next two weeks (${today.toLocaleDateString()} to ${twoWeeksOut.toLocaleDateString()})
+3. Happening on a Friday, Saturday, or Sunday within the next two weeks (${today.toLocaleDateString()} to ${twoWeeksOut.toLocaleDateString()})
 4. Would be fun for a group of girlfriends
 
 Include events across all categories: nightlife & dining, arts & culture, wellness & outdoors, entertainment, social gatherings.

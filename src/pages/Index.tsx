@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useSquadSetup } from "@/hooks/useSquadSetup";
-import SquadPickerDialog from "@/components/SquadPickerDialog";
+
 import { useSquads } from "@/hooks/useSquads";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
@@ -36,7 +36,7 @@ interface Profile {
 const DashboardContent = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
-  const { pendingJoinSquads, joinSquad: joinPendingSquad, dismissPicker } = useSquadSetup(user?.id);
+  useSquadSetup(user?.id);
   const { squads, activeSquadId, setActiveSquadId, squadMemberIds, reload: reloadSquads } = useSquads(user?.id);
   const [activeView, setActiveView] = useState<string | null>(null);
   const [events, setEvents] = useState<DbEvent[]>([]);
@@ -407,18 +407,6 @@ const DashboardContent = () => {
           onToggleRsvp={() => selectedEventId && !isMyPlansView && toggleRsvp(selectedEventId)}
         />
 
-        <SquadPickerDialog
-          open={pendingJoinSquads.length > 0}
-          squads={pendingJoinSquads}
-          onSelect={async (id) => {
-            const squad = pendingJoinSquads.find((s) => s.id === id);
-            if (squad) {
-              await joinPendingSquad(squad);
-              reloadSquads();
-            }
-          }}
-          onClose={dismissPicker}
-        />
       </div>
     </div>
   );

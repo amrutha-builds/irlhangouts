@@ -2,10 +2,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-interface PendingJoinSquad {
-  id: string;
-  name: string;
-}
 
 /**
  * After auth, checks sessionStorage for pending squad creation or join requests.
@@ -13,23 +9,6 @@ interface PendingJoinSquad {
  */
 export const useSquadSetup = (userId: string | undefined) => {
   const { toast } = useToast();
-  const [pendingJoinSquads, setPendingJoinSquads] = useState<PendingJoinSquad[]>([]);
-
-  const joinSquad = async (squad: PendingJoinSquad) => {
-    if (!userId) return;
-    const { error } = await supabase
-      .from("squad_members")
-      .upsert(
-        { squad_id: squad.id, user_id: userId },
-        { onConflict: "squad_id,user_id" }
-      );
-    if (!error) {
-      toast({ title: `Joined ${squad.name}! 🎉` });
-    }
-    setPendingJoinSquads([]);
-  };
-
-  const dismissPicker = () => setPendingJoinSquads([]);
 
   useEffect(() => {
     if (!userId) return;
@@ -69,29 +48,26 @@ export const useSquadSetup = (userId: string | undefined) => {
       const joinCode = sessionStorage.getItem("join_squad_code");
       if (joinCode) {
         sessionStorage.removeItem("join_squad_code");
-        const { data: squads } = await supabase
+        const { data: squad } = await supabase
           .from("squads")
           .select("id, name")
-          .eq("invite_code", joinCode);
+          .eq("invite_code", joinCode)
+          .maybeSingle();
 
-        if (squads && squads.length === 1) {
+        if (squad) {
           const { error } = await supabase
             .from("squad_members")
             .upsert(
-              { squad_id: squads[0].id, user_id: userId },
+              { squad_id: squad.id, user_id: userId },
               { onConflict: "squad_id,user_id" }
             );
           if (!error) {
-            toast({ title: `Joined ${squads[0].name}! 🎉` });
+            toast({ title: `Joined ${squad.name}! 🎉` });
           }
-        } else if (squads && squads.length > 1) {
-          setPendingJoinSquads(squads);
         }
       }
     };
 
     processPending();
   }, [userId, toast]);
-
-  return { pendingJoinSquads, joinSquad, dismissPicker };
 };

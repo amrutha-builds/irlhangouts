@@ -1,0 +1,1 @@
+ALTER TABLE public.squads ADD CONSTRAINT squads_invite_code_key UNIQUE (invite_code);

@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useSquadSetup } from "@/hooks/useSquadSetup";
-import SquadPickerDialog from "@/components/SquadPickerDialog";
+
 import { useSquads } from "@/hooks/useSquads";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 

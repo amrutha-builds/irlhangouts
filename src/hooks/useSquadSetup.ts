@@ -1,12 +1,35 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+interface PendingJoinSquad {
+  id: string;
+  name: string;
+}
+
 /**
  * After auth, checks sessionStorage for pending squad creation or join requests.
+ * Returns pending join squads when multiple match an invite code (for picker UI).
  */
 export const useSquadSetup = (userId: string | undefined) => {
   const { toast } = useToast();
+  const [pendingJoinSquads, setPendingJoinSquads] = useState<PendingJoinSquad[]>([]);
+
+  const joinSquad = async (squad: PendingJoinSquad) => {
+    if (!userId) return;
+    const { error } = await supabase
+      .from("squad_members")
+      .upsert(
+        { squad_id: squad.id, user_id: userId },
+        { onConflict: "squad_id,user_id" }
+      );
+    if (!error) {
+      toast({ title: `Joined ${squad.name}! 🎉` });
+    }
+    setPendingJoinSquads([]);
+  };
+
+  const dismissPicker = () => setPendingJoinSquads([]);
 
   useEffect(() => {
     if (!userId) return;
@@ -29,13 +52,8 @@ export const useSquadSetup = (userId: string | undefined) => {
             .single();
 
           if (error) {
-            if (error.code === "23505") {
-              toast({ title: "Code taken", description: "That invite code is already in use. Try another one.", variant: "destructive" });
-            } else {
-              throw error;
-            }
+            throw error;
           } else if (squad) {
-            // Auto-join own squad
             await supabase.from("squad_members").insert({
               squad_id: squad.id,
               user_id: userId,
@@ -51,26 +69,29 @@ export const useSquadSetup = (userId: string | undefined) => {
       const joinCode = sessionStorage.getItem("join_squad_code");
       if (joinCode) {
         sessionStorage.removeItem("join_squad_code");
-        const { data: squad } = await supabase
+        const { data: squads } = await supabase
           .from("squads")
           .select("id, name")
-          .eq("invite_code", joinCode)
-          .maybeSingle();
+          .eq("invite_code", joinCode);
 
-        if (squad) {
+        if (squads && squads.length === 1) {
           const { error } = await supabase
             .from("squad_members")
             .upsert(
-              { squad_id: squad.id, user_id: userId },
+              { squad_id: squads[0].id, user_id: userId },
               { onConflict: "squad_id,user_id" }
             );
           if (!error) {
-            toast({ title: `Joined ${squad.name}! 🎉` });
+            toast({ title: `Joined ${squads[0].name}! 🎉` });
           }
+        } else if (squads && squads.length > 1) {
+          setPendingJoinSquads(squads);
         }
       }
     };
 
     processPending();
   }, [userId, toast]);
+
+  return { pendingJoinSquads, joinSquad, dismissPicker };
 };

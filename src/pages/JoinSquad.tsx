@@ -1,40 +1,50 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Users, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import SquadPickerDialog from "@/components/SquadPickerDialog";
 
 const JoinSquad = () => {
   const { code } = useParams<{ code: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [matchingSquads, setMatchingSquads] = useState<{ id: string; name: string }[]>([]);
+  const [showPicker, setShowPicker] = useState(false);
 
   useEffect(() => {
     if (user && code) {
-      joinSquad();
+      findAndJoinSquad();
     }
   }, [user, code]);
 
-  const joinSquad = async () => {
+  const findAndJoinSquad = async () => {
     if (!user || !code) return;
 
-    // Find squad by invite code
-    const { data: squad, error: findError } = await supabase
+    const { data: squads, error: findError } = await supabase
       .from("squads")
       .select("id, name")
-      .eq("invite_code", code.toUpperCase())
-      .maybeSingle();
+      .eq("invite_code", code.toUpperCase());
 
-    if (findError || !squad) {
+    if (findError || !squads || squads.length === 0) {
       toast({ title: "Invalid code", description: "This invite code doesn't exist.", variant: "destructive" });
       navigate("/dashboard", { replace: true });
       return;
     }
 
-    // Join the squad
+    if (squads.length === 1) {
+      await joinSquad(squads[0]);
+    } else {
+      setMatchingSquads(squads);
+      setShowPicker(true);
+    }
+  };
+
+  const joinSquad = async (squad: { id: string; name: string }) => {
+    if (!user) return;
     const { error: joinError } = await supabase
       .from("squad_members")
       .upsert(
@@ -49,6 +59,22 @@ const JoinSquad = () => {
     }
     navigate("/dashboard", { replace: true });
   };
+
+  if (user && showPicker) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <SquadPickerDialog
+          open={true}
+          squads={matchingSquads}
+          onSelect={(id) => {
+            const squad = matchingSquads.find((s) => s.id === id);
+            if (squad) joinSquad(squad);
+          }}
+          onClose={() => navigate("/dashboard", { replace: true })}
+        />
+      </div>
+    );
+  }
 
   if (user) {
     return (
@@ -72,10 +98,7 @@ const JoinSquad = () => {
           <Users className="h-10 w-10 text-primary" />
         </div>
         <div>
-          <h1
-            className="text-2xl font-bold text-foreground"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
+          <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
             You've Been Invited!
           </h1>
           <p className="mt-2 text-muted-foreground">

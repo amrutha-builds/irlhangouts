@@ -1,4 +1,4 @@
-import { Users, Plus, Copy, Check, LogOut } from "lucide-react";
+import { Users, CalendarCheck, Copy, Check, LogOut } from "lucide-react";
 import { useState } from "react";
 import {
   Sidebar,
@@ -20,6 +20,14 @@ interface Squad {
   member_count: number;
 }
 
+interface MyPlanEvent {
+  id: string;
+  title: string;
+  emoji: string;
+  date: string;
+  squadTag: string;
+}
+
 interface SquadSidebarProps {
   squads: Squad[];
   activeSquadId: string | null;
@@ -27,6 +35,8 @@ interface SquadSidebarProps {
   onSignOut: () => void;
   userName?: string;
   userEmoji?: string;
+  myPlans?: MyPlanEvent[];
+  onSelectEvent?: (eventId: string) => void;
 }
 
 const SquadSidebar = ({
@@ -36,6 +46,8 @@ const SquadSidebar = ({
   onSignOut,
   userName,
   userEmoji,
+  myPlans = [],
+  onSelectEvent,
 }: SquadSidebarProps) => {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
@@ -52,7 +64,49 @@ const SquadSidebar = ({
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
-        <SidebarGroup>
+        {/* My Plans */}
+        <SidebarGroup defaultOpen>
+          <SidebarGroupLabel>
+            <CalendarCheck className="mr-2 h-4 w-4" />
+            {!collapsed && "My Plans"}
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {myPlans.length === 0 ? (
+                <SidebarMenuItem>
+                  <div className={`px-3 py-2 text-xs text-muted-foreground ${collapsed ? "hidden" : ""}`}>
+                    No RSVPs yet
+                  </div>
+                </SidebarMenuItem>
+              ) : (
+                myPlans.map((event) => (
+                  <SidebarMenuItem key={`${event.id}-${event.squadTag}`}>
+                    <SidebarMenuButton
+                      onClick={() => onSelectEvent?.(event.id)}
+                      tooltip={event.title}
+                    >
+                      <span className="text-lg">{event.emoji}</span>
+                      {!collapsed && (
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium">{event.title}</p>
+                          <div className="flex items-center gap-1.5">
+                            <span className="truncate text-xs text-muted-foreground">{event.date}</span>
+                            <span className="shrink-0 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                              {event.squadTag}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))
+              )}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* My Squads */}
+        <SidebarGroup defaultOpen>
           <SidebarGroupLabel>
             <Users className="mr-2 h-4 w-4" />
             {!collapsed && "My Squads"}

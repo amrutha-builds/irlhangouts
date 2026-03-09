@@ -66,8 +66,8 @@ const DashboardContent = () => {
 
   const loadData = async () => {
     setLoading(true);
-    const rsvpQuery = activeSquadId
-      ? supabase.from("rsvps").select("*").eq("squad_id", activeSquadId)
+    const rsvpQuery = effectiveSquadId
+      ? supabase.from("rsvps").select("*").eq("squad_id", effectiveSquadId)
       : supabase.from("rsvps").select("*");
 
     // Also fetch current user's RSVPs across ALL squads

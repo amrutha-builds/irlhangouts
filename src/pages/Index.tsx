@@ -47,7 +47,7 @@ const DashboardContent = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [activeSquadId]);
 
   // Reload squads after squad setup completes
   useEffect(() => {

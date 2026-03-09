@@ -183,6 +183,7 @@ const DashboardContent = () => {
     .filter(Boolean) as (DbEvent & { squadTag: string; friends: { name: string; emoji: string; going: boolean; isCurrentUser?: boolean }[] })[];
 
 
+  return (
     <div className="flex min-h-screen w-full">
       <SquadSidebar
         squads={squads}

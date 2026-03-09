@@ -36,7 +36,7 @@ interface Profile {
 const DashboardContent = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
-  useSquadSetup(user?.id);
+  const { pendingJoinSquads, joinSquad: joinPendingSquad, dismissPicker } = useSquadSetup(user?.id);
   const { squads, activeSquadId, setActiveSquadId, squadMemberIds, reload: reloadSquads } = useSquads(user?.id);
   const [activeView, setActiveView] = useState<string | null>(null);
   const [events, setEvents] = useState<DbEvent[]>([]);

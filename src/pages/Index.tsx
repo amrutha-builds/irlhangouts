@@ -3,13 +3,16 @@ import { motion } from "framer-motion";
 import heroImage from "@/assets/hero-girlfriends.jpg";
 import EventCard from "@/components/EventCard";
 import EventDetailDialog from "@/components/EventDetailDialog";
-import { Sparkles, RefreshCw, LogOut } from "lucide-react";
+import { Sparkles, RefreshCw } from "lucide-react";
 import AddEventDialog from "@/components/AddEventDialog";
 import PersonalityQuiz from "@/components/PersonalityQuiz";
+import SquadSidebar from "@/components/SquadSidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useSquadSetup } from "@/hooks/useSquadSetup";
+import { useSquads } from "@/hooks/useSquads";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 interface DbEvent {
   id: string;
@@ -29,10 +32,11 @@ interface Profile {
   personality_type: string | null;
 }
 
-const Index = () => {
+const DashboardContent = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   useSquadSetup(user?.id);
+  const { squads, activeSquadId, setActiveSquadId, squadMemberIds, reload: reloadSquads } = useSquads(user?.id);
   const [events, setEvents] = useState<DbEvent[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [rsvps, setRsvps] = useState<Record<string, Record<string, boolean>>>({});
@@ -45,6 +49,11 @@ const Index = () => {
     loadData();
   }, []);
 
+  // Reload squads after squad setup completes
+  useEffect(() => {
+    if (user?.id) reloadSquads();
+  }, [user?.id]);
+
   const loadData = async () => {
     setLoading(true);
     const [eventsRes, profilesRes, rsvpsRes] = await Promise.all([
@@ -56,7 +65,6 @@ const Index = () => {
     if (eventsRes.data) setEvents(eventsRes.data);
     if (profilesRes.data) setProfiles(profilesRes.data);
 
-    // Build rsvp map: { eventId: { userId: going } }
     const rsvpMap: Record<string, Record<string, boolean>> = {};
     if (rsvpsRes.data) {
       for (const r of rsvpsRes.data) {
@@ -73,7 +81,6 @@ const Index = () => {
     const currentlyGoing = rsvps[eventId]?.[user.id] ?? false;
     const newGoing = !currentlyGoing;
 
-    // Optimistic update
     setRsvps((prev) => ({
       ...prev,
       [eventId]: { ...prev[eventId], [user.id]: newGoing },
@@ -87,7 +94,6 @@ const Index = () => {
       );
 
     if (error) {
-      // Revert
       setRsvps((prev) => ({
         ...prev,
         [eventId]: { ...prev[eventId], [user.id]: currentlyGoing },
@@ -123,12 +129,17 @@ const Index = () => {
     return day === 0 || day === 5 || day === 6;
   };
 
+  // Filter profiles to only squad members
+  const squadProfiles = profiles.filter((p) => squadMemberIds.includes(p.id));
+  const currentProfile = profiles.find((p) => p.id === user?.id);
+
   const filteredEvents = weekendOnly ? events.filter((e) => isWeekend(e.date)) : events;
 
+  // Build events with only squad member friends
   const eventsWithFriends = filteredEvents
     .map((event) => ({
       ...event,
-      friends: profiles.map((p) => ({
+      friends: squadProfiles.map((p) => ({
         name: p.display_name,
         emoji: p.emoji,
         going: rsvps[event.id]?.[p.id] ?? false,
@@ -142,126 +153,153 @@ const Index = () => {
     });
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header actions */}
-      <div className="absolute right-4 top-4 z-20 flex gap-2">
-        <button
-          onClick={handleScrape}
-          disabled={scraping}
-          className="flex items-center gap-2 rounded-full bg-primary/80 px-4 py-2 text-sm font-medium text-primary-foreground backdrop-blur-sm transition-all hover:bg-primary disabled:opacity-50"
-        >
-          <RefreshCw className={`h-4 w-4 ${scraping ? "animate-spin" : ""}`} />
-          {scraping ? "Finding events..." : "Find Events"}
-        </button>
-        <button
-          onClick={signOut}
-          className="flex items-center gap-2 rounded-full bg-background/50 px-4 py-2 text-sm font-medium text-foreground backdrop-blur-sm transition-all hover:bg-background/80"
-        >
-          <LogOut className="h-4 w-4" />
-        </button>
-      </div>
+    <div className="flex min-h-screen w-full">
+      <SquadSidebar
+        squads={squads}
+        activeSquadId={activeSquadId}
+        onSelectSquad={setActiveSquadId}
+        onSignOut={signOut}
+        userName={currentProfile?.display_name}
+        userEmoji={currentProfile?.emoji}
+      />
 
-      {/* Hero */}
-      <div className="relative h-[420px] overflow-hidden">
-        <img
-          src={heroImage}
-          alt="Five girlfriends laughing together at golden hour"
-          className="h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-foreground/30 via-foreground/20 to-background" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-          >
-            <div className="mb-3 flex items-center justify-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary-foreground" />
-              <span className="text-sm font-medium tracking-widest uppercase text-primary-foreground/80" style={{ fontFamily: "var(--font-body)" }}>
-                The Fab Five
-              </span>
-              <Sparkles className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <h1 className="text-5xl font-bold tracking-tight text-primary-foreground md:text-6xl" style={{ fontFamily: "var(--font-display)" }}>
-              Girls' Night Agenda
-            </h1>
-            <p className="mx-auto mt-3 max-w-md text-lg text-primary-foreground/80" style={{ fontFamily: "var(--font-body)" }}>
-              SF Bay Area events for our crew ✨
-            </p>
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Squad bar */}
-      <div className="flex items-center justify-center gap-3 py-6">
-      {profiles.map((p) => (
-          <div key={p.id} className="flex flex-col items-center gap-1">
-            <span className={`flex h-10 w-10 items-center justify-center rounded-full bg-accent text-lg ring-2 ${p.id === user?.id ? "ring-primary" : "ring-primary/30"}`}>
-              {p.emoji}
-            </span>
-            <span className="text-xs font-medium text-muted-foreground">{p.display_name}</span>
-            {p.id === user?.id ? (
-              <PersonalityQuiz
-                currentType={p.personality_type}
-                onComplete={async (type) => {
-                  await supabase.from("profiles").update({ personality_type: type }).eq("id", user.id);
-                  setProfiles((prev) => prev.map((pr) => pr.id === user.id ? { ...pr, personality_type: type } : pr));
-                }}
-              />
-            ) : p.personality_type ? (
-              <span className="mt-0.5 rounded-full bg-accent/60 px-2 py-0.5 text-[10px] font-medium text-accent-foreground">
-                {p.personality_type.replace("The ", "")}
-              </span>
-            ) : null}
-          </div>
-        ))}
-      </div>
-
-      {/* Filter bar */}
-      <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 pb-4">
-        <div className="flex items-center gap-3">
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header */}
+        <div className="flex items-center gap-2 border-b border-border px-4 py-2">
+          <SidebarTrigger />
+          <div className="flex-1" />
           <button
-            onClick={() => setWeekendOnly(false)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${!weekendOnly ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"}`}
+            onClick={handleScrape}
+            disabled={scraping}
+            className="flex items-center gap-2 rounded-full bg-primary/80 px-4 py-2 text-sm font-medium text-primary-foreground backdrop-blur-sm transition-all hover:bg-primary disabled:opacity-50"
           >
-            All Events
-          </button>
-          <button
-            onClick={() => setWeekendOnly(true)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${weekendOnly ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"}`}
-          >
-            🎉 Weekends Only
+            <RefreshCw className={`h-4 w-4 ${scraping ? "animate-spin" : ""}`} />
+            {scraping ? "Finding..." : "Find Events"}
           </button>
         </div>
-        <AddEventDialog onEventAdded={loadData} />
-      </div>
 
-      {/* Events */}
-      <div className="mx-auto max-w-5xl px-4 pb-16">
-        {loading ? (
-          <div className="flex items-center justify-center py-20 text-muted-foreground">Loading events...</div>
-        ) : events.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
-            <p className="text-lg text-muted-foreground">No events yet!</p>
-            <button
-              onClick={handleScrape}
-              disabled={scraping}
-              className="rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-50"
+        {/* Hero */}
+        <div className="relative h-[320px] overflow-hidden">
+          <img
+            src={heroImage}
+            alt="Five girlfriends laughing together at golden hour"
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-foreground/30 via-foreground/20 to-background" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7 }}
             >
-              {scraping ? "Finding events..." : "🔍 Discover SF Bay Area Events"}
+              <div className="mb-3 flex items-center justify-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary-foreground" />
+                <span className="text-sm font-medium tracking-widest uppercase text-primary-foreground/80" style={{ fontFamily: "var(--font-body)" }}>
+                  {squads.find((s) => s.id === activeSquadId)?.name || "Squad Events"}
+                </span>
+                <Sparkles className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <h1 className="text-4xl font-bold tracking-tight text-primary-foreground md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
+                Girls' Night Agenda
+              </h1>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Squad bar */}
+        <div className="flex items-center justify-center gap-3 py-6">
+          {squadProfiles.map((p) => (
+            <div key={p.id} className="flex flex-col items-center gap-1">
+              <span className={`flex h-10 w-10 items-center justify-center rounded-full bg-accent text-lg ring-2 ${p.id === user?.id ? "ring-primary" : "ring-primary/30"}`}>
+                {p.emoji}
+              </span>
+              <span className="text-xs font-medium text-muted-foreground">{p.display_name}</span>
+              {p.id === user?.id ? (
+                <PersonalityQuiz
+                  currentType={p.personality_type}
+                  onComplete={async (type) => {
+                    await supabase.from("profiles").update({ personality_type: type }).eq("id", user.id);
+                    setProfiles((prev) => prev.map((pr) => pr.id === user.id ? { ...pr, personality_type: type } : pr));
+                  }}
+                />
+              ) : p.personality_type ? (
+                <span className="mt-0.5 rounded-full bg-accent/60 px-2 py-0.5 text-[10px] font-medium text-accent-foreground">
+                  {p.personality_type.replace("The ", "")}
+                </span>
+              ) : null}
+            </div>
+          ))}
+          {squadProfiles.length === 0 && !loading && (
+            <p className="text-sm text-muted-foreground">No squad selected</p>
+          )}
+        </div>
+
+        {/* Filter bar */}
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 pb-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setWeekendOnly(false)}
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${!weekendOnly ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"}`}
+            >
+              All Events
+            </button>
+            <button
+              onClick={() => setWeekendOnly(true)}
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${weekendOnly ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"}`}
+            >
+              🎉 Weekends Only
             </button>
           </div>
-        ) : (
-          <>
-            {/* RSVP'd events section */}
-            {eventsWithFriends.filter((e) => e.friends.some((f) => f.going)).length > 0 && (
-              <div className="mb-10">
-                <h2 className="mb-4 text-lg font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
-                  🔥 Popular with the Squad
-                </h2>
+          <AddEventDialog onEventAdded={loadData} />
+        </div>
+
+        {/* Events */}
+        <div className="mx-auto w-full max-w-5xl px-4 pb-16">
+          {loading ? (
+            <div className="flex items-center justify-center py-20 text-muted-foreground">Loading events...</div>
+          ) : events.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
+              <p className="text-lg text-muted-foreground">No events yet!</p>
+              <button
+                onClick={handleScrape}
+                disabled={scraping}
+                className="rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-50"
+              >
+                {scraping ? "Finding events..." : "🔍 Discover SF Bay Area Events"}
+              </button>
+            </div>
+          ) : (
+            <>
+              {eventsWithFriends.filter((e) => e.friends.some((f) => f.going)).length > 0 && (
+                <div className="mb-10">
+                  <h2 className="mb-4 text-lg font-semibold text-foreground">
+                    🔥 Popular with the Squad
+                  </h2>
+                  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    {eventsWithFriends
+                      .filter((e) => e.friends.some((f) => f.going))
+                      .map((event, i) => (
+                        <EventCard
+                          key={event.id}
+                          {...event}
+                          index={i}
+                          onToggleRsvp={() => toggleRsvp(event.id)}
+                          onClick={() => setSelectedEventId(event.id)}
+                        />
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                {eventsWithFriends.filter((e) => e.friends.some((f) => f.going)).length > 0 && (
+                  <h2 className="mb-4 text-lg font-semibold text-foreground">
+                    🗓️ More Events
+                  </h2>
+                )}
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                   {eventsWithFriends
-                    .filter((e) => e.friends.some((f) => f.going))
+                    .filter((e) => !e.friends.some((f) => f.going))
                     .map((event, i) => (
                       <EventCard
                         key={event.id}
@@ -273,42 +311,25 @@ const Index = () => {
                     ))}
                 </div>
               </div>
-            )}
+            </>
+          )}
+        </div>
 
-            {/* Remaining events */}
-            <div>
-              {eventsWithFriends.filter((e) => e.friends.some((f) => f.going)).length > 0 && (
-                <h2 className="mb-4 text-lg font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
-                  🗓️ More Events
-                </h2>
-              )}
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {eventsWithFriends
-                  .filter((e) => !e.friends.some((f) => f.going))
-                  .map((event, i) => (
-                    <EventCard
-                      key={event.id}
-                      {...event}
-                      index={i}
-                      onToggleRsvp={() => toggleRsvp(event.id)}
-                      onClick={() => setSelectedEventId(event.id)}
-                    />
-                  ))}
-              </div>
-            </div>
-          </>
-        )}
+        <EventDetailDialog
+          open={!!selectedEventId}
+          onOpenChange={(open) => !open && setSelectedEventId(null)}
+          event={selectedEventId ? eventsWithFriends.find((e) => e.id === selectedEventId) ?? null : null}
+          onToggleRsvp={() => selectedEventId && toggleRsvp(selectedEventId)}
+        />
       </div>
-
-      {/* Event detail dialog */}
-      <EventDetailDialog
-        open={!!selectedEventId}
-        onOpenChange={(open) => !open && setSelectedEventId(null)}
-        event={selectedEventId ? eventsWithFriends.find((e) => e.id === selectedEventId) ?? null : null}
-        onToggleRsvp={() => selectedEventId && toggleRsvp(selectedEventId)}
-      />
     </div>
   );
 };
+
+const Index = () => (
+  <SidebarProvider>
+    <DashboardContent />
+  </SidebarProvider>
+);
 
 export default Index;

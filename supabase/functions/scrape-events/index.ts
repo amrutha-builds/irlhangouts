@@ -5,7 +5,6 @@ const corsHeaders = {
 };
 
 const SCRAPE_URLS = [
-  "https://www.eventbrite.com/d/ca--san-jose/all-events/?distance=50mi",
   "https://www.eventbrite.com/d/ca--san-jose/events--this-weekend/?distance=50mi",
   "https://www.eventbrite.com/d/ca--san-jose/events--next-week/?distance=50mi",
 ];

@@ -1,0 +1,1 @@
+ALTER TABLE public.squads DROP CONSTRAINT squads_invite_code_key;

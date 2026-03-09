@@ -65,7 +65,7 @@ const SquadSidebar = ({
     <Sidebar collapsible="icon">
       <SidebarContent>
         {/* My Plans */}
-        <SidebarGroup defaultOpen>
+        <SidebarGroup>
           <SidebarGroupLabel>
             <CalendarCheck className="mr-2 h-4 w-4" />
             {!collapsed && "My Plans"}

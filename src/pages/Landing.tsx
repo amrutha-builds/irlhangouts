@@ -1,19 +1,21 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, ArrowRight, Copy, Check, Users } from "lucide-react";
+import { Sparkles, ArrowRight, Copy, Check, Users, UserPlus, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+
+type Step = "hero" | "choose" | "create" | "join" | "done";
 
 const Landing = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [step, setStep] = useState<"hero" | "create" | "done">("hero");
+  const [step, setStep] = useState<Step>("hero");
   const [squadName, setSquadName] = useState("");
   const [inviteCode, setInviteCode] = useState("");
+  const [joinCode, setJoinCode] = useState("");
   const [codeError, setCodeError] = useState("");
   const [copied, setCopied] = useState(false);
 
-  // If already logged in, go to dashboard
   if (user) {
     navigate("/dashboard", { replace: true });
     return null;
@@ -32,7 +34,6 @@ const Landing = () => {
     }
     if (!squadName.trim()) return;
 
-    // Store in sessionStorage for post-auth creation
     sessionStorage.setItem("pending_squad", JSON.stringify({
       name: squadName.trim(),
       invite_code: code,
@@ -41,12 +42,32 @@ const Landing = () => {
     setStep("done");
   };
 
+  const handleJoinSquad = (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = joinCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if (code.length < 4) {
+      setCodeError("Code must be at least 4 characters");
+      return;
+    }
+    sessionStorage.setItem("join_squad_code", code);
+    navigate("/auth");
+  };
+
   const handleCopy = () => {
     const shareUrl = `${window.location.origin}/join/${inviteCode}`;
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const backButton = (to: Step) => (
+    <button
+      onClick={() => { setStep(to); setCodeError(""); }}
+      className="mb-6 text-sm font-medium text-muted-foreground hover:text-foreground"
+    >
+      ← Back
+    </button>
+  );
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
@@ -83,7 +104,7 @@ const Landing = () => {
 
             <div className="flex w-full flex-col gap-3">
               <button
-                onClick={() => setStep("create")}
+                onClick={() => setStep("choose")}
                 className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-lg font-semibold text-primary-foreground transition-all hover:bg-primary/90"
               >
                 Hook My Squad Up
@@ -99,6 +120,56 @@ const Landing = () => {
           </motion.div>
         )}
 
+        {step === "choose" && (
+          <motion.div
+            key="choose"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="w-full max-w-sm"
+          >
+            {backButton("hero")}
+
+            <h2
+              className="mb-2 text-2xl font-bold text-foreground"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              What's the move?
+            </h2>
+            <p className="mb-6 text-sm text-muted-foreground">
+              Start a new squad or join one your friend already created
+            </p>
+
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => setStep("create")}
+                className="flex w-full items-center gap-4 rounded-2xl border border-border bg-card p-5 text-left transition-all hover:border-primary/50 hover:shadow-md"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                  <Plus className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">Create a Squad</p>
+                  <p className="text-sm text-muted-foreground">Start a new group & invite your girls</p>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setStep("join")}
+                className="flex w-full items-center gap-4 rounded-2xl border border-border bg-card p-5 text-left transition-all hover:border-primary/50 hover:shadow-md"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent/50">
+                  <UserPlus className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">Join a Squad</p>
+                  <p className="text-sm text-muted-foreground">Enter an invite code from a friend</p>
+                </div>
+              </button>
+            </div>
+          </motion.div>
+        )}
+
         {step === "create" && (
           <motion.div
             key="create"
@@ -107,12 +178,7 @@ const Landing = () => {
             exit={{ opacity: 0, y: -20 }}
             className="w-full max-w-sm"
           >
-            <button
-              onClick={() => setStep("hero")}
-              className="mb-6 text-sm font-medium text-muted-foreground hover:text-foreground"
-            >
-              ← Back
-            </button>
+            {backButton("choose")}
 
             <h2
               className="mb-2 text-2xl font-bold text-foreground"
@@ -167,6 +233,60 @@ const Landing = () => {
                 className="w-full rounded-xl bg-primary py-3 font-medium text-primary-foreground transition-all hover:bg-primary/90"
               >
                 Create Squad ✨
+              </button>
+            </form>
+          </motion.div>
+        )}
+
+        {step === "join" && (
+          <motion.div
+            key="join"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="w-full max-w-sm"
+          >
+            {backButton("choose")}
+
+            <h2
+              className="mb-2 text-2xl font-bold text-foreground"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Join a Squad
+            </h2>
+            <p className="mb-6 text-sm text-muted-foreground">
+              Enter the invite code your friend shared with you
+            </p>
+
+            <form onSubmit={handleJoinSquad} className="space-y-4">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">
+                  Invite Code
+                </label>
+                <input
+                  type="text"
+                  value={joinCode}
+                  onChange={(e) => {
+                    setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));
+                    setCodeError("");
+                  }}
+                  placeholder="GIRLSNIGHT"
+                  maxLength={20}
+                  className="w-full rounded-xl border border-border bg-card px-4 py-3 text-center text-lg font-medium tracking-widest uppercase text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  required
+                  autoFocus
+                />
+                {codeError && (
+                  <p className="mt-1 text-sm text-destructive">{codeError}</p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-medium text-primary-foreground transition-all hover:bg-primary/90"
+              >
+                Join Squad
+                <ArrowRight className="h-4 w-4" />
               </button>
             </form>
           </motion.div>

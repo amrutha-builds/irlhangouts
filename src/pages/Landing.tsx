@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Sparkles, ArrowRight, Copy, Check, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +14,15 @@ const Landing = () => {
   const [codeError, setCodeError] = useState("");
   const [copied, setCopied] = useState(false);
   const [created, setCreated] = useState(false);
+
+  // Generate a suggested invite code from squad name
+  useEffect(() => {
+    const name = squadName.trim();
+    if (!name) { setInviteCode(""); return; }
+    const base = name.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
+    const suffix = Math.floor(1000 + Math.random() * 9000);
+    setInviteCode(base ? `${base}${suffix}` : "");
+  }, [squadName]);
 
   if (user) {
     navigate("/dashboard", { replace: true });

@@ -40,6 +40,7 @@ const DashboardContent = () => {
   const [events, setEvents] = useState<DbEvent[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [rsvps, setRsvps] = useState<Record<string, Record<string, boolean>>>({});
+  const [myRsvps, setMyRsvps] = useState<{ event_id: string; squad_id: string; going: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
   const [scraping, setScraping] = useState(false);
   const [weekendOnly, setWeekendOnly] = useState(false);
@@ -60,14 +61,21 @@ const DashboardContent = () => {
       ? supabase.from("rsvps").select("*").eq("squad_id", activeSquadId)
       : supabase.from("rsvps").select("*");
 
-    const [eventsRes, profilesRes, rsvpsRes] = await Promise.all([
+    // Also fetch current user's RSVPs across ALL squads
+    const myRsvpQuery = user
+      ? supabase.from("rsvps").select("event_id,squad_id,going").eq("user_id", user.id).eq("going", true)
+      : null;
+
+    const [eventsRes, profilesRes, rsvpsRes, myRsvpsRes] = await Promise.all([
       supabase.from("events").select("*").order("created_at", { ascending: false }),
       supabase.from("profiles").select("*"),
       rsvpQuery,
+      myRsvpQuery ?? Promise.resolve({ data: [] }),
     ]);
 
     if (eventsRes.data) setEvents(eventsRes.data);
     if (profilesRes.data) setProfiles(profilesRes.data);
+    if (myRsvpsRes.data) setMyRsvps(myRsvpsRes.data as any);
 
     const rsvpMap: Record<string, Record<string, boolean>> = {};
     if (rsvpsRes.data) {
@@ -155,6 +163,25 @@ const DashboardContent = () => {
       const bCount = b.friends.filter((f) => f.going).length;
       return bCount - aCount;
     });
+
+  // Build "My Plans" - events user RSVP'd to across all squads
+  const myRsvpEventIds = [...new Set(myRsvps.map((r) => r.event_id))];
+  const myRsvpEvents = myRsvpEventIds
+    .map((eventId) => {
+      const event = events.find((e) => e.id === eventId);
+      if (!event) return null;
+      const rsvpSquadIds = myRsvps.filter((r) => r.event_id === eventId).map((r) => r.squad_id);
+      const squadNames = rsvpSquadIds
+        .map((sid) => squads.find((s) => s.id === sid)?.name)
+        .filter(Boolean);
+      return {
+        ...event,
+        squadTag: squadNames.join(", "),
+        friends: [] as { name: string; emoji: string; going: boolean; isCurrentUser?: boolean }[],
+      };
+    })
+    .filter(Boolean) as (DbEvent & { squadTag: string; friends: { name: string; emoji: string; going: boolean; isCurrentUser?: boolean }[] })[];
+
 
   return (
     <div className="flex min-h-screen w-full">
@@ -259,6 +286,32 @@ const DashboardContent = () => {
 
         {/* Events */}
         <div className="mx-auto w-full max-w-5xl px-4 pb-16">
+          {/* My Plans - RSVPs across all squads */}
+          {!loading && myRsvpEvents.length > 0 && (
+            <div className="mb-10">
+              <h2 className="mb-4 text-lg font-semibold text-foreground">
+                📋 My Plans
+              </h2>
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {myRsvpEvents.map((event, i) => (
+                  <div key={`${event.id}-${event.squadTag}`} className="relative">
+                    {event.squadTag && (
+                      <span className="absolute top-3 right-3 z-10 rounded-full bg-primary/90 px-2.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
+                        {event.squadTag}
+                      </span>
+                    )}
+                    <EventCard
+                      {...event}
+                      index={i}
+                      onToggleRsvp={() => toggleRsvp(event.id)}
+                      onClick={() => setSelectedEventId(event.id)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div className="flex items-center justify-center py-20 text-muted-foreground">Loading events...</div>
           ) : events.length === 0 ? (

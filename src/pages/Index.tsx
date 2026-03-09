@@ -37,6 +37,7 @@ const DashboardContent = () => {
   const { toast } = useToast();
   useSquadSetup(user?.id);
   const { squads, activeSquadId, setActiveSquadId, squadMemberIds, reload: reloadSquads } = useSquads(user?.id);
+  const [activeView, setActiveView] = useState<string>("my-plans");
   const [events, setEvents] = useState<DbEvent[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [rsvps, setRsvps] = useState<Record<string, Record<string, boolean>>>({});
@@ -46,9 +47,17 @@ const DashboardContent = () => {
   const [weekendOnly, setWeekendOnly] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
+  const isMyPlansView = activeView === "my-plans";
+  const effectiveSquadId = isMyPlansView ? null : activeView;
+
+  // Sync activeSquadId in useSquads when switching to a squad view
+  useEffect(() => {
+    if (effectiveSquadId) setActiveSquadId(effectiveSquadId);
+  }, [effectiveSquadId]);
+
   useEffect(() => {
     loadData();
-  }, [activeSquadId]);
+  }, [activeView]);
 
   // Reload squads after squad setup completes
   useEffect(() => {
@@ -57,8 +66,8 @@ const DashboardContent = () => {
 
   const loadData = async () => {
     setLoading(true);
-    const rsvpQuery = activeSquadId
-      ? supabase.from("rsvps").select("*").eq("squad_id", activeSquadId)
+    const rsvpQuery = effectiveSquadId
+      ? supabase.from("rsvps").select("*").eq("squad_id", effectiveSquadId)
       : supabase.from("rsvps").select("*");
 
     // Also fetch current user's RSVPs across ALL squads
@@ -89,7 +98,7 @@ const DashboardContent = () => {
   };
 
   const toggleRsvp = async (eventId: string) => {
-    if (!user || !activeSquadId) return;
+    if (!user || !effectiveSquadId) return;
     const currentlyGoing = rsvps[eventId]?.[user.id] ?? false;
     const newGoing = !currentlyGoing;
 
@@ -101,7 +110,7 @@ const DashboardContent = () => {
     const { error } = await supabase
       .from("rsvps")
       .upsert(
-        { event_id: eventId, user_id: user.id, going: newGoing, squad_id: activeSquadId } as any,
+        { event_id: eventId, user_id: user.id, going: newGoing, squad_id: effectiveSquadId } as any,
         { onConflict: "event_id,user_id,squad_id" }
       );
 
@@ -187,13 +196,12 @@ const DashboardContent = () => {
     <div className="flex min-h-screen w-full">
       <SquadSidebar
         squads={squads}
-        activeSquadId={activeSquadId}
-        onSelectSquad={setActiveSquadId}
+        activeView={activeView}
+        onSelectView={setActiveView}
         onSignOut={signOut}
         userName={currentProfile?.display_name}
         userEmoji={currentProfile?.emoji}
-        myPlans={myRsvpEvents.map((e) => ({ id: e.id, title: e.title, emoji: e.emoji, date: e.date, squadTag: e.squadTag }))}
-        onSelectEvent={(eventId) => setSelectedEventId(eventId)}
+        myPlansCount={myRsvpEvents.length}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
@@ -228,7 +236,7 @@ const DashboardContent = () => {
               <div className="mb-3 flex items-center justify-center gap-2">
                 <Sparkles className="h-5 w-5 text-primary-foreground" />
                 <span className="text-sm font-medium tracking-widest uppercase text-primary-foreground/80" style={{ fontFamily: "var(--font-body)" }}>
-                  {squads.find((s) => s.id === activeSquadId)?.name || "Squad Events"}
+                  {isMyPlansView ? "My Plans" : (squads.find((s) => s.id === activeView)?.name || "Squad Events")}
                 </span>
                 <Sparkles className="h-5 w-5 text-primary-foreground" />
               </div>
@@ -239,33 +247,35 @@ const DashboardContent = () => {
           </div>
         </div>
 
-        {/* Squad bar */}
-        <div className="flex items-center justify-center gap-3 py-6">
-          {squadProfiles.map((p) => (
-            <div key={p.id} className="flex flex-col items-center gap-1">
-              <span className={`flex h-10 w-10 items-center justify-center rounded-full bg-accent text-lg ring-2 ${p.id === user?.id ? "ring-primary" : "ring-primary/30"}`}>
-                {p.emoji}
-              </span>
-              <span className="text-xs font-medium text-muted-foreground">{p.display_name}</span>
-              {p.id === user?.id ? (
-                <PersonalityQuiz
-                  currentType={p.personality_type}
-                  onComplete={async (type) => {
-                    await supabase.from("profiles").update({ personality_type: type }).eq("id", user.id);
-                    setProfiles((prev) => prev.map((pr) => pr.id === user.id ? { ...pr, personality_type: type } : pr));
-                  }}
-                />
-              ) : p.personality_type ? (
-                <span className="mt-0.5 rounded-full bg-accent/60 px-2 py-0.5 text-[10px] font-medium text-accent-foreground">
-                  {p.personality_type.replace("The ", "")}
+        {/* Squad bar - only in squad view */}
+        {!isMyPlansView && (
+          <div className="flex items-center justify-center gap-3 py-6">
+            {squadProfiles.map((p) => (
+              <div key={p.id} className="flex flex-col items-center gap-1">
+                <span className={`flex h-10 w-10 items-center justify-center rounded-full bg-accent text-lg ring-2 ${p.id === user?.id ? "ring-primary" : "ring-primary/30"}`}>
+                  {p.emoji}
                 </span>
-              ) : null}
-            </div>
-          ))}
-          {squadProfiles.length === 0 && !loading && (
-            <p className="text-sm text-muted-foreground">No squad selected</p>
-          )}
-        </div>
+                <span className="text-xs font-medium text-muted-foreground">{p.display_name}</span>
+                {p.id === user?.id ? (
+                  <PersonalityQuiz
+                    currentType={p.personality_type}
+                    onComplete={async (type) => {
+                      await supabase.from("profiles").update({ personality_type: type }).eq("id", user.id);
+                      setProfiles((prev) => prev.map((pr) => pr.id === user.id ? { ...pr, personality_type: type } : pr));
+                    }}
+                  />
+                ) : p.personality_type ? (
+                  <span className="mt-0.5 rounded-full bg-accent/60 px-2 py-0.5 text-[10px] font-medium text-accent-foreground">
+                    {p.personality_type.replace("The ", "")}
+                  </span>
+                ) : null}
+              </div>
+            ))}
+            {squadProfiles.length === 0 && !loading && (
+              <p className="text-sm text-muted-foreground">No squad selected</p>
+            )}
+          </div>
+        )}
 
         {/* Filter bar */}
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 pb-4">
@@ -283,14 +293,41 @@ const DashboardContent = () => {
               🎉 Weekends Only
             </button>
           </div>
-          <AddEventDialog onEventAdded={loadData} />
+          {!isMyPlansView && <AddEventDialog onEventAdded={loadData} />}
         </div>
 
         {/* Events */}
         <div className="mx-auto w-full max-w-5xl px-4 pb-16">
-
           {loading ? (
             <div className="flex items-center justify-center py-20 text-muted-foreground">Loading events...</div>
+          ) : isMyPlansView ? (
+            /* My Plans view */
+            myRsvpEvents.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
+                <span className="text-5xl">📋</span>
+                <p className="text-lg text-muted-foreground">No plans yet!</p>
+                <p className="text-sm text-muted-foreground">RSVP to events from a squad to see them here</p>
+              </div>
+            ) : (
+              <div>
+                <h2 className="mb-4 text-lg font-semibold text-foreground">📋 Events I'm Going To</h2>
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {myRsvpEvents.map((event, i) => (
+                    <div key={`${event.id}-${event.squadTag}`} className="relative">
+                      <span className="absolute top-3 right-3 z-10 rounded-full bg-primary/90 px-2.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
+                        {event.squadTag}
+                      </span>
+                      <EventCard
+                        {...event}
+                        index={i}
+                        onToggleRsvp={() => {}}
+                        onClick={() => setSelectedEventId(event.id)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
           ) : events.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
               <p className="text-lg text-muted-foreground">No events yet!</p>
@@ -352,8 +389,8 @@ const DashboardContent = () => {
         <EventDetailDialog
           open={!!selectedEventId}
           onOpenChange={(open) => !open && setSelectedEventId(null)}
-          event={selectedEventId ? eventsWithFriends.find((e) => e.id === selectedEventId) ?? null : null}
-          onToggleRsvp={() => selectedEventId && toggleRsvp(selectedEventId)}
+          event={selectedEventId ? [...eventsWithFriends, ...myRsvpEvents].find((e) => e.id === selectedEventId) ?? null : null}
+          onToggleRsvp={() => selectedEventId && !isMyPlansView && toggleRsvp(selectedEventId)}
         />
       </div>
     </div>

@@ -20,34 +20,24 @@ interface Squad {
   member_count: number;
 }
 
-interface MyPlanEvent {
-  id: string;
-  title: string;
-  emoji: string;
-  date: string;
-  squadTag: string;
-}
-
 interface SquadSidebarProps {
   squads: Squad[];
-  activeSquadId: string | null;
-  onSelectSquad: (id: string) => void;
+  activeView: string | null; // squad id or "my-plans"
+  onSelectView: (view: string) => void;
   onSignOut: () => void;
   userName?: string;
   userEmoji?: string;
-  myPlans?: MyPlanEvent[];
-  onSelectEvent?: (eventId: string) => void;
+  myPlansCount?: number;
 }
 
 const SquadSidebar = ({
   squads,
-  activeSquadId,
-  onSelectSquad,
+  activeView,
+  onSelectView,
   onSignOut,
   userName,
   userEmoji,
-  myPlans = [],
-  onSelectEvent,
+  myPlansCount = 0,
 }: SquadSidebarProps) => {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
@@ -64,43 +54,32 @@ const SquadSidebar = ({
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
-        {/* My Plans */}
         <SidebarGroup>
           <SidebarGroupLabel>
-            <CalendarCheck className="mr-2 h-4 w-4" />
-            {!collapsed && "My Plans"}
+            {!collapsed ? "Navigation" : ""}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {myPlans.length === 0 ? (
-                <SidebarMenuItem>
-                  <div className={`px-3 py-2 text-xs text-muted-foreground ${collapsed ? "hidden" : ""}`}>
-                    No RSVPs yet
-                  </div>
-                </SidebarMenuItem>
-              ) : (
-                myPlans.map((event) => (
-                  <SidebarMenuItem key={`${event.id}-${event.squadTag}`}>
-                    <SidebarMenuButton
-                      onClick={() => onSelectEvent?.(event.id)}
-                      tooltip={event.title}
-                    >
-                      <span className="text-lg">{event.emoji}</span>
-                      {!collapsed && (
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">{event.title}</p>
-                          <div className="flex items-center gap-1.5">
-                            <span className="truncate text-xs text-muted-foreground">{event.date}</span>
-                            <span className="shrink-0 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                              {event.squadTag}
-                            </span>
-                          </div>
-                        </div>
+              {/* My Plans item */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => onSelectView("my-plans")}
+                  isActive={activeView === "my-plans"}
+                  tooltip="My Plans"
+                >
+                  <CalendarCheck className="h-5 w-5" />
+                  {!collapsed && (
+                    <div className="flex flex-1 items-center justify-between">
+                      <span className="text-sm font-medium">My Plans</span>
+                      {myPlansCount > 0 && (
+                        <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                          {myPlansCount}
+                        </span>
                       )}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))
-              )}
+                    </div>
+                  )}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -116,8 +95,8 @@ const SquadSidebar = ({
               {squads.map((squad) => (
                 <SidebarMenuItem key={squad.id}>
                   <SidebarMenuButton
-                    onClick={() => onSelectSquad(squad.id)}
-                    isActive={squad.id === activeSquadId}
+                    onClick={() => onSelectView(squad.id)}
+                    isActive={activeView === squad.id}
                     tooltip={squad.name}
                   >
                     <span className="text-lg">👯</span>

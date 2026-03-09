@@ -5,8 +5,9 @@ const corsHeaders = {
 };
 
 const SCRAPE_URLS = [
-  "https://www.eventbrite.com/d/ca--san-francisco/events--this-weekend/",
-  "https://www.eventbrite.com/d/ca--san-francisco/events--next-week/",
+  "https://www.eventbrite.com/d/ca--san-jose/all-events/?distance=50mi",
+  "https://www.eventbrite.com/d/ca--san-jose/events--this-weekend/?distance=50mi",
+  "https://www.eventbrite.com/d/ca--san-jose/events--next-week/?distance=50mi",
 ];
 
 const SEARCH_QUERIES = [
@@ -152,9 +153,9 @@ Deno.serve(async (req) => {
     const systemPrompt = `You are an event extraction assistant. Extract upcoming IN-PERSON events from the scraped web content below.
 
 STRICT FILTERS — only include events that meet ALL of these criteria:
-1. Located in the San Francisco Bay Area (SF, Oakland, Berkeley, San Jose, Peninsula, etc.)
+1. Located within 50 miles of San Jose, CA (includes San Jose, San Francisco, Oakland, Berkeley, Palo Alto, Mountain View, Santa Cruz, Fremont, etc.)
 2. In-person / physical events only — exclude virtual, online, or livestream events
-3. Happening on a Friday, Saturday, or Sunday within the next two weeks (${today.toLocaleDateString()} to ${twoWeeksOut.toLocaleDateString()})
+3. Happening within the next two weeks (${today.toLocaleDateString()} to ${twoWeeksOut.toLocaleDateString()})
 4. Would be fun for a group of girlfriends
 
 Include events across all categories: nightlife & dining, arts & culture, wellness & outdoors, entertainment, social gatherings.
@@ -167,7 +168,7 @@ For each event, extract:
 - source_url: The direct URL to the event page or ticket purchase page from the source website
 - description: A 1-2 sentence summary of the event — what it is, what to expect, and why it's fun
 
-Extract up to 25 of the best events. Prioritize Sulekha events. Exclude any event that doesn't clearly state an in-person location.`;
+Extract up to 40 of the best events. Prioritize variety across categories. Exclude any event that doesn't clearly state an in-person location.`;
 
     const aiResp = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",

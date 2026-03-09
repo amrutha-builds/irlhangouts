@@ -37,6 +37,7 @@ const DashboardContent = () => {
   const { toast } = useToast();
   useSquadSetup(user?.id);
   const { squads, activeSquadId, setActiveSquadId, squadMemberIds, reload: reloadSquads } = useSquads(user?.id);
+  const [activeView, setActiveView] = useState<string>("my-plans");
   const [events, setEvents] = useState<DbEvent[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [rsvps, setRsvps] = useState<Record<string, Record<string, boolean>>>({});
@@ -46,9 +47,17 @@ const DashboardContent = () => {
   const [weekendOnly, setWeekendOnly] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
+  const isMyPlansView = activeView === "my-plans";
+  const effectiveSquadId = isMyPlansView ? null : activeView;
+
+  // Sync activeSquadId in useSquads when switching to a squad view
+  useEffect(() => {
+    if (effectiveSquadId) setActiveSquadId(effectiveSquadId);
+  }, [effectiveSquadId]);
+
   useEffect(() => {
     loadData();
-  }, [activeSquadId]);
+  }, [activeView]);
 
   // Reload squads after squad setup completes
   useEffect(() => {

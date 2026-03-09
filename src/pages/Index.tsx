@@ -9,6 +9,7 @@ import PersonalityQuiz from "@/components/PersonalityQuiz";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useSquadSetup } from "@/hooks/useSquadSetup";
 
 interface DbEvent {
   id: string;
@@ -31,6 +32,7 @@ interface Profile {
 const Index = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  useSquadSetup(user?.id);
   const [events, setEvents] = useState<DbEvent[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [rsvps, setRsvps] = useState<Record<string, Record<string, boolean>>>({});

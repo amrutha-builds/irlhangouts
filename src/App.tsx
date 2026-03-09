@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Landing from "./pages/Landing";
+import JoinSquad from "./pages/JoinSquad";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,8 +27,10 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
+            <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/join/:code" element={<JoinSquad />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

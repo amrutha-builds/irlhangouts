@@ -1,0 +1,76 @@
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+/**
+ * After auth, checks sessionStorage for pending squad creation or join requests.
+ */
+export const useSquadSetup = (userId: string | undefined) => {
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const processPending = async () => {
+      // Handle pending squad creation
+      const pendingRaw = sessionStorage.getItem("pending_squad");
+      if (pendingRaw) {
+        sessionStorage.removeItem("pending_squad");
+        try {
+          const pending = JSON.parse(pendingRaw);
+          const { data: squad, error } = await supabase
+            .from("squads")
+            .insert({
+              name: pending.name,
+              invite_code: pending.invite_code,
+              created_by: userId,
+            })
+            .select("id")
+            .single();
+
+          if (error) {
+            if (error.code === "23505") {
+              toast({ title: "Code taken", description: "That invite code is already in use. Try another one.", variant: "destructive" });
+            } else {
+              throw error;
+            }
+          } else if (squad) {
+            // Auto-join own squad
+            await supabase.from("squad_members").insert({
+              squad_id: squad.id,
+              user_id: userId,
+            });
+            toast({ title: `Squad "${pending.name}" created! 🎉` });
+          }
+        } catch (e: any) {
+          console.error("Squad creation error:", e);
+        }
+      }
+
+      // Handle pending squad join
+      const joinCode = sessionStorage.getItem("join_squad_code");
+      if (joinCode) {
+        sessionStorage.removeItem("join_squad_code");
+        const { data: squad } = await supabase
+          .from("squads")
+          .select("id, name")
+          .eq("invite_code", joinCode)
+          .maybeSingle();
+
+        if (squad) {
+          const { error } = await supabase
+            .from("squad_members")
+            .upsert(
+              { squad_id: squad.id, user_id: userId },
+              { onConflict: "squad_id,user_id" }
+            );
+          if (!error) {
+            toast({ title: `Joined ${squad.name}! 🎉` });
+          }
+        }
+      }
+    };
+
+    processPending();
+  }, [userId, toast]);
+};

@@ -192,6 +192,8 @@ const DashboardContent = () => {
         onSignOut={signOut}
         userName={currentProfile?.display_name}
         userEmoji={currentProfile?.emoji}
+        myPlans={myRsvpEvents.map((e) => ({ id: e.id, title: e.title, emoji: e.emoji, date: e.date, squadTag: e.squadTag }))}
+        onSelectEvent={(eventId) => setSelectedEventId(eventId)}
       />
 
       <div className="flex-1 flex flex-col min-w-0">

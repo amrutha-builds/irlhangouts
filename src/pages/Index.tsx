@@ -98,7 +98,7 @@ const DashboardContent = () => {
   };
 
   const toggleRsvp = async (eventId: string) => {
-    if (!user || !activeSquadId) return;
+    if (!user || !effectiveSquadId) return;
     const currentlyGoing = rsvps[eventId]?.[user.id] ?? false;
     const newGoing = !currentlyGoing;
 

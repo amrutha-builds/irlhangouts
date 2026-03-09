@@ -123,15 +123,21 @@ const Index = () => {
 
   const filteredEvents = weekendOnly ? events.filter((e) => isWeekend(e.date)) : events;
 
-  const eventsWithFriends = filteredEvents.map((event) => ({
-    ...event,
-    friends: profiles.map((p) => ({
-      name: p.display_name,
-      emoji: p.emoji,
-      going: rsvps[event.id]?.[p.id] ?? false,
-      isCurrentUser: p.id === user?.id,
-    })),
-  }));
+  const eventsWithFriends = filteredEvents
+    .map((event) => ({
+      ...event,
+      friends: profiles.map((p) => ({
+        name: p.display_name,
+        emoji: p.emoji,
+        going: rsvps[event.id]?.[p.id] ?? false,
+        isCurrentUser: p.id === user?.id,
+      })),
+    }))
+    .sort((a, b) => {
+      const aCount = a.friends.filter((f) => f.going).length;
+      const bCount = b.friends.filter((f) => f.going).length;
+      return bCount - aCount;
+    });
 
   return (
     <div className="min-h-screen bg-background">

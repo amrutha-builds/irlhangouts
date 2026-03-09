@@ -15,6 +15,17 @@ const Landing = () => {
   const [copied, setCopied] = useState(false);
   const [created, setCreated] = useState(false);
 
+  // Generate a suggested invite code from squad name
+  useEffect(() => {
+    const name = squadName.trim();
+    if (!name) { setInviteCode(""); return; }
+    const base = name.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
+    const suffix = Math.floor(1000 + Math.random() * 9000);
+    setInviteCode(base ? `${base}${suffix}` : "");
+  }, [squadName]);
+  const [copied, setCopied] = useState(false);
+  const [created, setCreated] = useState(false);
+
   if (user) {
     navigate("/dashboard", { replace: true });
     return null;

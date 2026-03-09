@@ -106,7 +106,7 @@ const SquadSidebar = ({
         </SidebarGroup>
 
         {/* My Squads */}
-        <SidebarGroup defaultOpen>
+        <SidebarGroup>
           <SidebarGroupLabel>
             <Users className="mr-2 h-4 w-4" />
             {!collapsed && "My Squads"}

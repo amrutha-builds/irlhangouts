@@ -23,8 +23,6 @@ const Landing = () => {
     const suffix = Math.floor(1000 + Math.random() * 9000);
     setInviteCode(base ? `${base}${suffix}` : "");
   }, [squadName]);
-  const [copied, setCopied] = useState(false);
-  const [created, setCreated] = useState(false);
 
   if (user) {
     navigate("/dashboard", { replace: true });

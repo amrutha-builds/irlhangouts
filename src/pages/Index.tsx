@@ -234,7 +234,7 @@ const Index = () => {
         <AddEventDialog onEventAdded={loadData} />
       </div>
 
-      {/* Events grid */}
+      {/* Events */}
       <div className="mx-auto max-w-5xl px-4 pb-16">
         {loading ? (
           <div className="flex items-center justify-center py-20 text-muted-foreground">Loading events...</div>
@@ -250,17 +250,51 @@ const Index = () => {
             </button>
           </div>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {eventsWithFriends.map((event, i) => (
-              <EventCard
-                key={event.id}
-                {...event}
-                index={i}
-                onToggleRsvp={() => toggleRsvp(event.id)}
-                onClick={() => setSelectedEventId(event.id)}
-              />
-            ))}
-          </div>
+          <>
+            {/* RSVP'd events section */}
+            {eventsWithFriends.filter((e) => e.friends.some((f) => f.isCurrentUser && f.going)).length > 0 && (
+              <div className="mb-10">
+                <h2 className="mb-4 text-lg font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
+                  ✅ You're Going
+                </h2>
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {eventsWithFriends
+                    .filter((e) => e.friends.some((f) => f.isCurrentUser && f.going))
+                    .map((event, i) => (
+                      <EventCard
+                        key={event.id}
+                        {...event}
+                        index={i}
+                        onToggleRsvp={() => toggleRsvp(event.id)}
+                        onClick={() => setSelectedEventId(event.id)}
+                      />
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Remaining events */}
+            <div>
+              {eventsWithFriends.filter((e) => e.friends.some((f) => f.isCurrentUser && f.going)).length > 0 && (
+                <h2 className="mb-4 text-lg font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
+                  🗓️ More Events
+                </h2>
+              )}
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {eventsWithFriends
+                  .filter((e) => !e.friends.some((f) => f.isCurrentUser && f.going))
+                  .map((event, i) => (
+                    <EventCard
+                      key={event.id}
+                      {...event}
+                      index={i}
+                      onToggleRsvp={() => toggleRsvp(event.id)}
+                      onClick={() => setSelectedEventId(event.id)}
+                    />
+                  ))}
+              </div>
+            </div>
+          </>
         )}
       </div>
 

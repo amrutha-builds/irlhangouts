@@ -23,8 +23,8 @@ const Landing = () => {
   const handleCreateSquad = (e: React.FormEvent) => {
     e.preventDefault();
     const code = inviteCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-    if (code.length < 4) { setCodeError("Code must be at least 4 characters"); return; }
-    if (code.length > 20) { setCodeError("Code must be 20 characters or less"); return; }
+    if (code.length < 4) {setCodeError("Code must be at least 4 characters");return;}
+    if (code.length > 20) {setCodeError("Code must be 20 characters or less");return;}
     if (!squadName.trim()) return;
     sessionStorage.setItem("pending_squad", JSON.stringify({ name: squadName.trim(), invite_code: code }));
     setInviteCode(code);
@@ -34,7 +34,7 @@ const Landing = () => {
   const handleJoinSquad = (e: React.FormEvent) => {
     e.preventDefault();
     const code = joinCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-    if (code.length < 4) { setCodeError("Code must be at least 4 characters"); return; }
+    if (code.length < 4) {setCodeError("Code must be at least 4 characters");return;}
     sessionStorage.setItem("join_squad_code", code);
     navigate("/auth");
   };
@@ -51,8 +51,8 @@ const Landing = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex w-full max-w-sm flex-col items-center gap-6 text-center"
-        >
+          className="flex w-full max-w-sm flex-col items-center gap-6 text-center">
+          
           <span className="text-5xl">🎉</span>
           <div>
             <h2 className="text-2xl font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
@@ -75,8 +75,8 @@ const Landing = () => {
             Sign Up to Continue <ArrowRight className="h-4 w-4" />
           </button>
         </motion.div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -84,8 +84,8 @@ const Landing = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex w-full max-w-md flex-col items-center gap-8"
-      >
+        className="flex w-full max-w-md flex-col items-center gap-8">
+        
         {/* Header */}
         <div className="flex flex-col items-center gap-3 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
@@ -97,7 +97,7 @@ const Landing = () => {
             <Sparkles className="h-4 w-4 text-primary" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
-            Girls' Night Agenda
+            Girlfriends Get Togethers    
           </h1>
           <p className="text-sm text-muted-foreground">Discover events, RSVP with your crew, and never miss a night out ✨</p>
         </div>
@@ -116,17 +116,17 @@ const Landing = () => {
                 <input
                   type="text" value={squadName} onChange={(e) => setSquadName(e.target.value)}
                   placeholder="The Fab Five" maxLength={50} required autoFocus
-                  className="w-full rounded-xl border border-border bg-card px-4 py-3 text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                />
+                  className="w-full rounded-xl border border-border bg-card px-4 py-3 text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-foreground">Invite Code</label>
                 <input
                   type="text" value={inviteCode}
-                  onChange={(e) => { setInviteCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")); setCodeError(""); }}
+                  onChange={(e) => {setInviteCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));setCodeError("");}}
                   placeholder="GIRLSNIGHT" maxLength={20} required
-                  className="w-full rounded-xl border border-border bg-card px-4 py-3 text-center text-lg font-medium tracking-widest uppercase text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                />
+                  className="w-full rounded-xl border border-border bg-card px-4 py-3 text-center text-lg font-medium tracking-widest uppercase text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                
                 {codeError && <p className="mt-1 text-sm text-destructive">{codeError}</p>}
               </div>
               <button type="submit" className="w-full rounded-xl bg-primary py-3 font-medium text-primary-foreground hover:bg-primary/90">
@@ -141,10 +141,10 @@ const Landing = () => {
                 <label className="mb-1.5 block text-sm font-medium text-foreground">Invite Code</label>
                 <input
                   type="text" value={joinCode}
-                  onChange={(e) => { setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")); setCodeError(""); }}
+                  onChange={(e) => {setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));setCodeError("");}}
                   placeholder="GIRLSNIGHT" maxLength={20} required autoFocus
-                  className="w-full rounded-xl border border-border bg-card px-4 py-3 text-center text-lg font-medium tracking-widest uppercase text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                />
+                  className="w-full rounded-xl border border-border bg-card px-4 py-3 text-center text-lg font-medium tracking-widest uppercase text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                
                 {codeError && <p className="mt-1 text-sm text-destructive">{codeError}</p>}
               </div>
               <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-medium text-primary-foreground hover:bg-primary/90">
@@ -158,8 +158,8 @@ const Landing = () => {
           Already have a squad? Sign in
         </button>
       </motion.div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default Landing;

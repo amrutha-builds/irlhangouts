@@ -2,10 +2,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-interface PendingJoinSquad {
-  id: string;
-  name: string;
-}
 
 /**
  * After auth, checks sessionStorage for pending squad creation or join requests.

@@ -182,9 +182,9 @@ const DashboardContent = () => {
       })),
     }))
     .sort((a, b) => {
-      const aCount = a.friends.filter((f) => f.going).length;
-      const bCount = b.friends.filter((f) => f.going).length;
-      return bCount - aCount;
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      return dateA - dateB;
     });
 
   // Build "My Plans" - events user RSVP'd to across all squads

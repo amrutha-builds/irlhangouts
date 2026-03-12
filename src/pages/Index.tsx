@@ -360,15 +360,13 @@ const DashboardContent = () => {
             </div>
           ) : (
             <>
-              {eventsWithFriends.filter((e) => e.friends.some((f) => f.going)).length > 0 && (
+              {popularEvents.length > 0 && (
                 <div className="mb-10">
                   <h2 className="mb-4 text-lg font-semibold text-foreground">
                     🔥 Popular with the Squad
                   </h2>
                   <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                    {eventsWithFriends
-                      .filter((e) => e.friends.some((f) => f.going))
-                      .map((event, i) => (
+                    {popularEvents.map((event, i) => (
                         <EventCard
                           key={event.id}
                           {...event}
@@ -382,15 +380,13 @@ const DashboardContent = () => {
               )}
 
               <div>
-                {eventsWithFriends.filter((e) => e.friends.some((f) => f.going)).length > 0 && (
+                {popularEvents.length > 0 && (
                   <h2 className="mb-4 text-lg font-semibold text-foreground">
                     🗓️ More Events
                   </h2>
                 )}
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                  {eventsWithFriends
-                    .filter((e) => !e.friends.some((f) => f.going))
-                    .map((event, i) => (
+                  {moreEvents.map((event, i) => (
                       <EventCard
                         key={event.id}
                         {...event}

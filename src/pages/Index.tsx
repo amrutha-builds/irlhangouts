@@ -180,12 +180,17 @@ const DashboardContent = () => {
         going: rsvps[event.id]?.[p.id] ?? false,
         isCurrentUser: p.id === user?.id,
       })),
-    }))
-    .sort((a, b) => {
-      const dateA = new Date(a.date).getTime();
-      const dateB = new Date(b.date).getTime();
-      return dateA - dateB;
-    });
+    }));
+
+  // Popular section: has RSVPs, sorted by RSVP count descending
+  const popularEvents = eventsWithFriends
+    .filter((e) => e.friends.some((f) => f.going))
+    .sort((a, b) => b.friends.filter((f) => f.going).length - a.friends.filter((f) => f.going).length);
+
+  // More Events section: no RSVPs, sorted by date ascending
+  const moreEvents = eventsWithFriends
+    .filter((e) => !e.friends.some((f) => f.going))
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   // Build "My Plans" - events user RSVP'd to across all squads
   const myRsvpEventIds = [...new Set(myRsvps.map((r) => r.event_id))];

@@ -139,6 +139,9 @@ const SquadSidebar = ({
   const [showJoinSquad, setShowJoinSquad] = useState(false);
   const [joinCode, setJoinCode] = useState("");
   const [joiningSquad, setJoiningSquad] = useState(false);
+  const [renameSquad, setRenameSquad] = useState<Squad | null>(null);
+  const [renameSquadName, setRenameSquadName] = useState("");
+  const [renamingSquad, setRenamingSquad] = useState(false);
   const handleCopy = (e: React.MouseEvent, squad: Squad) => {
     e.stopPropagation();
     const url = `${window.location.origin}/join/${squad.invite_code}`;

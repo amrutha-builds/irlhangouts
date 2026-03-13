@@ -40,12 +40,12 @@ const Auth = () => {
             className="text-3xl font-bold"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            Welcome, babe!
+            Let's Hang Out IRL
           </h1>
           <Sparkles className="h-6 w-6 text-primary" />
         </div>
         <p className="mb-8 text-muted-foreground">
-          Sign in to see what's on the agenda
+          Sign in to plan your next get-together with friends
         </p>
         <button
           onClick={handleGoogleSignIn}

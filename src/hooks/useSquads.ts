@@ -279,5 +279,6 @@ export const useSquads = (userId: string | undefined) => {
     createSquad,
     deleteSquad,
     joinSquadByCode,
+    renameSquad,
   };
 };

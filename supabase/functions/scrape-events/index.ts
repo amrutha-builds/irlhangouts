@@ -4,16 +4,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SCRAPE_URLS = [
-  "https://www.eventbrite.com/d/ca--san-jose/events--this-weekend/?distance=50mi",
-  "https://www.eventbrite.com/d/ca--san-jose/events--next-week/?distance=50mi",
-];
-
-const SEARCH_QUERIES = [
-  "site:sulekha.com San Francisco Bay Area events this weekend 2026",
-  "site:sulekha.com San Francisco Bay Area events next weekend 2026",
-];
-
 const CATEGORIES = [
   "Creative",
   "Food & Drinks",
@@ -58,8 +48,31 @@ Deno.serve(async (req) => {
       throw new Error("Supabase config missing");
     }
 
+    // Parse location from request body (default to San Jose, CA)
+    let userLocation = "San Jose, CA";
+    try {
+      const body = await req.json();
+      if (body?.location) {
+        userLocation = body.location;
+      }
+    } catch {
+      // No body or invalid JSON, use default
+    }
+
+    // Build location-aware URLs
+    const locationSlug = userLocation.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "");
+    const SCRAPE_URLS = [
+      `https://www.eventbrite.com/d/${locationSlug}/events--this-weekend/?distance=50mi`,
+      `https://www.eventbrite.com/d/${locationSlug}/events--next-week/?distance=50mi`,
+    ];
+
+    const SEARCH_QUERIES = [
+      `events this weekend near ${userLocation} 2026`,
+      `things to do this weekend ${userLocation} 2026`,
+    ];
+
     // Step 1: Scrape & search event sources
-    console.log("Scraping event sources...");
+    console.log(`Scraping events near ${userLocation}...`);
     const scrapeResults: string[] = [];
 
     // Scrape Eventbrite listing pages
@@ -97,7 +110,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Search for Sulekha events (their site is JS-heavy, search works better)
+    // Search for more events
     for (const query of SEARCH_QUERIES) {
       try {
         console.log(`Searching: ${query}`);
@@ -125,7 +138,7 @@ Deno.serve(async (req) => {
             const resultUrl = result?.url || "";
             if (md && md.length > 100) {
               scrapeResults.push(
-                `--- Source: ${resultUrl} (Sulekha) ---\n${md.slice(0, 5000)}`
+                `--- Source: ${resultUrl} ---\n${md.slice(0, 5000)}`
               );
             }
           }
@@ -152,7 +165,7 @@ Deno.serve(async (req) => {
     const systemPrompt = `You are an event extraction assistant. Extract upcoming IN-PERSON events from the scraped web content below.
 
 STRICT FILTERS — only include events that meet ALL of these criteria:
-1. Located within 50 miles of San Jose, CA (includes San Jose, San Francisco, Oakland, Berkeley, Palo Alto, Mountain View, Santa Cruz, Fremont, etc.)
+1. Located within 50 miles of ${userLocation}
 2. In-person / physical events only — exclude virtual, online, or livestream events
 3. Happening on a Friday, Saturday, or Sunday within the next two weeks (${today.toLocaleDateString()} to ${twoWeeksOut.toLocaleDateString()})
 4. Would be fun for a group of friends hanging out IRL
@@ -267,7 +280,6 @@ Extract up to 40 of the best events. Prioritize variety across categories. Exclu
       },
     });
 
-    // Insert new events
     const eventsToInsert = extractedEvents.map(
       (e: { title: string; date: string; location: string; category: string; source_url?: string; description?: string }) => ({
         title: e.title,
@@ -277,7 +289,7 @@ Extract up to 40 of the best events. Prioritize variety across categories. Exclu
         emoji: EMOJI_MAP[e.category] || "🎉",
         source_url: e.source_url || null,
         description: e.description || null,
-        created_by: null, // scraped, not user-created
+        created_by: null,
       })
     );
 

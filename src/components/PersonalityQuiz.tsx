@@ -36,7 +36,7 @@ const QUESTIONS = [
     question: "What do your friends always thank you for?",
     options: [
       { label: "Keeping everyone safe & fed", types: ["The Mom Friend", "The Planner"] },
-      { label: "Making boring things fun", types: ["The Hype Queen", "The Wild Card"] },
+      { label: "Making boring things fun", types: ["The Hype Person", "The Wild Card"] },
       { label: "Discovering the best new spots", types: ["The Cultured One", "The Adventure Seeker"] },
       { label: "Always saying YES to plans", types: ["The Wild Card", "The Adventure Seeker"] },
     ],

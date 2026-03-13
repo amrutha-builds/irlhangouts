@@ -50,7 +50,6 @@ const DashboardContent = () => {
   const [myRsvps, setMyRsvps] = useState<{ event_id: string; squad_id: string; going: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
   const [scraping, setScraping] = useState(false);
-  const [weekendOnly, setWeekendOnly] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [showLocationOnboarding, setShowLocationOnboarding] = useState(false);
   const [showOnboardingQuiz, setShowOnboardingQuiz] = useState(false);

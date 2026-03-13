@@ -96,6 +96,7 @@ interface SquadSidebarProps {
   onCreateSquad: (name: string, inviteCode: string) => Promise<void>;
   onDeleteSquad: (squadId: string) => Promise<void>;
   onJoinSquad: (code: string) => Promise<{ success: boolean; message: string }>;
+  onRenameSquad?: (squadId: string, newName: string) => Promise<void>;
 }
 
 const SquadSidebar = ({
@@ -117,6 +118,7 @@ const SquadSidebar = ({
   onCreateSquad,
   onDeleteSquad,
   onJoinSquad,
+  onRenameSquad,
 }: SquadSidebarProps) => {
   const { state } = useSidebar();
   const { toast } = useToast();
@@ -137,6 +139,9 @@ const SquadSidebar = ({
   const [showJoinSquad, setShowJoinSquad] = useState(false);
   const [joinCode, setJoinCode] = useState("");
   const [joiningSquad, setJoiningSquad] = useState(false);
+  const [renameSquad, setRenameSquad] = useState<Squad | null>(null);
+  const [renameSquadName, setRenameSquadName] = useState("");
+  const [renamingSquad, setRenamingSquad] = useState(false);
   const handleCopy = (e: React.MouseEvent, squad: Squad) => {
     e.stopPropagation();
     const url = `${window.location.origin}/join/${squad.invite_code}`;
@@ -189,6 +194,15 @@ const SquadSidebar = ({
       setJoinCode("");
       setShowJoinSquad(false);
     }
+  };
+
+  const handleRenameSquad = async () => {
+    if (!renameSquad || !renameSquadName.trim() || !onRenameSquad) return;
+    setRenamingSquad(true);
+    await onRenameSquad(renameSquad.id, renameSquadName.trim());
+    setRenamingSquad(false);
+    setRenameSquad(null);
+    setRenameSquadName("");
   };
 
   // Squads not in any folder
@@ -257,6 +271,16 @@ const SquadSidebar = ({
                       </DropdownMenuSubContent>
                     </DropdownMenuSub>
                   )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setRenameSquad(squad);
+                      setRenameSquadName(squad.name);
+                    }}
+                  >
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Rename Squad
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   {squad.member_count <= 1 ? (
                     <DropdownMenuItem
@@ -665,6 +689,33 @@ const SquadSidebar = ({
               className="w-full rounded-xl bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {joiningSquad ? "Joining..." : "Join Squad"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* Rename squad dialog */}
+      <Dialog open={!!renameSquad} onOpenChange={(o) => !o && setRenameSquad(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Rename Squad</DialogTitle>
+            <DialogDescription>Give your squad a new name.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <input
+              type="text"
+              placeholder="New squad name"
+              value={renameSquadName}
+              onChange={(e) => setRenameSquadName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && renameSquadName.trim() && !renamingSquad && handleRenameSquad()}
+              autoFocus
+              className="w-full rounded-xl border border-input bg-card px-4 py-2.5 text-sm text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <button
+              onClick={handleRenameSquad}
+              disabled={!renameSquadName.trim() || renamingSquad}
+              className="w-full rounded-xl bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              {renamingSquad ? "Renaming..." : "Rename Squad"}
             </button>
           </div>
         </DialogContent>

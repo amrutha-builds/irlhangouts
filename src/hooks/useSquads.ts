@@ -208,6 +208,16 @@ export const useSquads = (userId: string | undefined) => {
     await loadSquads();
   }, [userId, loadSquads]);
 
+  const renameSquad = useCallback(async (squadId: string, newName: string) => {
+    if (!userId || !newName.trim()) return;
+    await supabase
+      .from("squads")
+      .update({ name: newName.trim() })
+      .eq("id", squadId)
+      .eq("created_by", userId);
+    await loadSquads();
+  }, [userId, loadSquads]);
+
   const joinSquadByCode = useCallback(async (code: string): Promise<{ success: boolean; message: string }> => {
     if (!userId) return { success: false, message: "Not authenticated" };
     const normalizedCode = code.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -269,5 +279,6 @@ export const useSquads = (userId: string | undefined) => {
     createSquad,
     deleteSquad,
     joinSquadByCode,
+    renameSquad,
   };
 };

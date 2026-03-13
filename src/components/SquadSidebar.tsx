@@ -122,6 +122,7 @@ const SquadSidebar = ({
   const [renamingFolder, setRenamingFolder] = useState<SquadFolder | null>(null);
   const [renameFolderName, setRenameFolderName] = useState("");
   const [exitConfirm, setExitConfirm] = useState<Squad | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<Squad | null>(null);
   const [showArchive, setShowArchive] = useState(false);
   const [showNewSquad, setShowNewSquad] = useState(false);
   const [newSquadName, setNewSquadName] = useState("");

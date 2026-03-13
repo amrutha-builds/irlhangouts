@@ -23,10 +23,36 @@ const Auth = () => {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      const { error } = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+      // Use popup flow to work in iframe/preview environments
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          skipBrowserRedirect: true,
+          redirectTo: window.location.origin + "/auth",
+        },
       });
       if (error) throw error;
+
+      if (data?.url) {
+        const popup = window.open(data.url, "google-oauth", "width=500,height=600");
+        if (!popup) {
+          // Fallback: redirect directly if popup blocked
+          window.location.href = data.url;
+          return;
+        }
+
+        // Poll for popup close and session
+        const interval = setInterval(async () => {
+          if (popup.closed) {
+            clearInterval(interval);
+            const { data: sessionData } = await supabase.auth.getSession();
+            if (sessionData?.session) {
+              navigate("/dashboard", { replace: true });
+            }
+            setLoading(false);
+          }
+        }, 500);
+      }
     } catch (e: any) {
       console.error("Google sign-in error:", e);
       toast({ title: "Error", description: e.message || "Google sign-in failed", variant: "destructive" });

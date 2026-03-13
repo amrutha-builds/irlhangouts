@@ -203,10 +203,48 @@ export const useSquads = (userId: string | undefined) => {
 
   const deleteSquad = useCallback(async (squadId: string) => {
     if (!userId) return;
-    // Delete membership first, then the squad itself
     await supabase.from("squad_members").delete().eq("squad_id", squadId);
     await supabase.from("squads").delete().eq("id", squadId);
     await loadSquads();
+  }, [userId, loadSquads]);
+
+  const joinSquadByCode = useCallback(async (code: string): Promise<{ success: boolean; message: string }> => {
+    if (!userId) return { success: false, message: "Not authenticated" };
+    const normalizedCode = code.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if (!normalizedCode) return { success: false, message: "Please enter an invite code" };
+
+    const { data: squad, error: findError } = await supabase
+      .from("squads")
+      .select("id, name")
+      .eq("invite_code", normalizedCode)
+      .maybeSingle();
+
+    if (findError || !squad) return { success: false, message: "No squad found with that code" };
+
+    // Check if already a member
+    const { data: existing } = await supabase
+      .from("squad_members")
+      .select("id, archived_at")
+      .eq("squad_id", squad.id)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (existing && !(existing as any).archived_at) {
+      return { success: false, message: "You're already in this squad" };
+    }
+
+    if (existing && (existing as any).archived_at) {
+      // Rejoin archived membership
+      await supabase
+        .from("squad_members")
+        .update({ archived_at: null } as any)
+        .eq("id", existing.id);
+    } else {
+      await supabase.from("squad_members").insert({ squad_id: squad.id, user_id: userId });
+    }
+
+    await loadSquads();
+    return { success: true, message: `Joined ${squad.name}! 🎉` };
   }, [userId, loadSquads]);
 
   useEffect(() => {

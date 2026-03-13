@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Search, Loader2, ArrowRight, Plus, Users, LogIn, X, LayoutDashboard } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Sparkles, ArrowRight, Copy, Check, Users, Plus, LogIn } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import EventCard from "@/components/EventCard";
@@ -35,74 +35,71 @@ const Landing = () => {
   const [squadName, setSquadName] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [codeError, setCodeError] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [created, setCreated] = useState(false);
+  const [activePanel, setActivePanel] = useState<"none" | "create" | "join">("none");
+  const [pendingJoinCode, setPendingJoinCode] = useState<string | null>(null);
+
+  const location = useLocation();
+
+  // If the user lands on the page with an invite code stored in session storage or query params,
+  // prefill the join panel and explain what's happening.
+  useEffect(() => {
+    const joinCodeFromSession = sessionStorage.getItem("join_squad_code");
+    if (joinCodeFromSession) {
+      setJoinCode(joinCodeFromSession);
+      setPendingJoinCode(joinCodeFromSession);
+      setActivePanel("join");
+    }
+
+    const params = new URLSearchParams(location.search);
+    const invite = params.get("invite") || params.get("code");
+    if (invite) {
+      const normalized = invite.toUpperCase().replace(/[^A-Z0-9]/g, "");
+      if (normalized) {
+        sessionStorage.setItem("join_squad_code", normalized);
+        setJoinCode(normalized);
+        setPendingJoinCode(normalized);
+        setActivePanel("join");
+
+        // Remove query param so refresh doesn't repeat the flow
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState(null, "", cleanUrl);
+      }
+    }
+
+    const pendingRaw = sessionStorage.getItem("pending_squad");
+    if (pendingRaw) {
+      try {
+        const pending = JSON.parse(pendingRaw);
+        if (pending?.invite_code) {
+          setSquadName(pending.name || "");
+          setInviteCode(pending.invite_code);
+          setCreated(true);
+        }
+      } catch (e) {
+        // ignore invalid session state
+      }
+    }
+  }, [location.search]);
 
   const isLoggedIn = !!user;
 
   // For logged-in users: load profile and auto-populate location
   useEffect(() => {
-    if (!user) { setUserProfile(null); return; }
-    supabase
-      .from("profiles")
-      .select("display_name, emoji, location")
-      .eq("id", user.id)
-      .single()
-      .then(({ data }) => {
-        if (data) {
-          setUserProfile(data);
-          if (data.location) {
-            setCity(data.location);
-            setSubmittedCity(data.location);
-          }
-        }
-      });
-  }, [user]);
+    if (created) return;
+    const name = squadName.trim();
+    if (!name) { setInviteCode(""); return; }
+    const base = name.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
+    const suffix = Math.floor(1000 + Math.random() * 9000);
+    setInviteCode(base ? `${base}${suffix}` : "");
+  }, [squadName, created]);
 
-  // Auto-load events for logged-in users with a saved location
   useEffect(() => {
-    if (userProfile?.location && events.length === 0 && !hasSearched) {
-      loadEventsForCity(userProfile.location);
+    if (user) {
+      navigate("/dashboard", { replace: true });
     }
-  }, [userProfile]);
-
-  // Load existing public events on mount for anonymous users
-  useEffect(() => {
-    if (!user) loadExistingEvents();
-  }, [user]);
-
-  const loadExistingEvents = async () => {
-    const { data } = await supabase
-      .from("events")
-      .select("*")
-      .is("squad_id", null)
-      .order("created_at", { ascending: false })
-      .limit(20);
-    if (data && data.length > 0) {
-      setEvents(data);
-      setHasSearched(true);
-    }
-  };
-
-  const loadEventsForCity = async (location: string) => {
-    setLoading(true);
-    setSubmittedCity(location);
-    setHasSearched(true);
-    try {
-      await supabase.functions.invoke("scrape-events", {
-        body: { location },
-      });
-      const { data } = await supabase
-        .from("events")
-        .select("*")
-        .is("squad_id", null)
-        .order("created_at", { ascending: false })
-        .limit(30);
-      if (data) setEvents(data);
-    } catch (err) {
-      console.error("Failed to fetch events:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [user, navigate]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -334,31 +331,31 @@ const Landing = () => {
                   </div>
                 </div>
 
-                {/* Join a Squad */}
-                <div className="rounded-xl border border-border p-4">
-                  <div className="mb-2 flex items-center gap-2">
-                    <Users className="h-4 w-4 text-accent-foreground" />
-                    <span className="text-sm font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>Join a Squad</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={joinCode}
-                      onChange={(e) => { setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")); setCodeError(""); }}
-                      placeholder="Invite code"
-                      maxLength={20}
-                      className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-center text-sm font-medium tracking-widest uppercase text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                    <button
-                      onClick={handleJoinSquad}
-                      disabled={!joinCode.trim()}
-                      className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-                    >
-                      Join
-                    </button>
-                  </div>
-                  {codeError && <p className="mt-1 text-xs text-destructive">{codeError}</p>}
-                </div>
+          {/* Option 2: Join a Squad */}
+          <motion.div layout className="w-full">
+            <button
+              onClick={() => { setActivePanel(activePanel === "join" ? "none" : "join"); setCodeError(""); }}
+              className={`flex w-full items-center gap-4 rounded-2xl border p-5 text-left transition-all ${
+                activePanel === "join"
+                  ? "border-primary bg-primary/5 shadow-md"
+                  : "border-border bg-card hover:border-primary/40 hover:shadow-sm"
+              }`}
+            >
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent/40">
+                <Users className="h-6 w-6 text-accent-foreground" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
+                  {pendingJoinCode ? "You're invited!" : "Join a Squad"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {pendingJoinCode
+                    ? "We kept your invite code — just sign in to join your squad."
+                    : "Got an invite code? Enter it here."}
+                </p>
+              </div>
+              <ArrowRight className={`h-4 w-4 text-muted-foreground transition-transform ${activePanel === "join" ? "rotate-90" : ""}`} />
+            </button>
 
                 {/* Divider */}
                 <div className="flex items-center gap-3">
@@ -366,14 +363,8 @@ const Landing = () => {
                   <span className="text-xs text-muted-foreground">or</span>
                   <div className="h-px flex-1 bg-border" />
                 </div>
-
-                {/* Sign In */}
-                <button
-                  onClick={() => navigate("/auth")}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-secondary py-3 text-sm font-medium text-secondary-foreground hover:bg-accent"
-                >
-                  <LogIn className="h-4 w-4" />
-                  Sign In
+                <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-medium text-primary-foreground hover:bg-primary/90">
+                  {pendingJoinCode ? "Sign in to join" : "Join Squad"} <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
             </motion.div>

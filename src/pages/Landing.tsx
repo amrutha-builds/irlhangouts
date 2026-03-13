@@ -102,7 +102,7 @@ const Landing = () => {
           </div>
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-xs font-medium tracking-widest uppercase text-muted-foreground">Squad Events</span>
+            <span className="text-xs font-medium tracking-widest uppercase text-muted-foreground">IRL Events</span>
             <Sparkles className="h-4 w-4 text-primary" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl" style={{ fontFamily: "var(--font-display)" }}>

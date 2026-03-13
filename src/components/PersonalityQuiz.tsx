@@ -8,7 +8,7 @@ const QUESTIONS = [
   {
     question: "It's Saturday night — what's your vibe?",
     options: [
-      { label: "🍷 Chill bar with deep convos", types: ["The Mom Friend", "The Cultured One"] },
+      { label: "🍷 Chill bar with deep convos", types: ["The Heart", "The Cultured One"] },
       { label: "💃 Dancing till 2am", types: ["The Wild Card", "The Hype Person"] },
       { label: "🎨 Gallery opening or live show", types: ["The Cultured One", "The Planner"] },
       { label: "🏕️ Already left town for a road trip", types: ["The Wild Card", "The Adventure Seeker"] },
@@ -17,10 +17,10 @@ const QUESTIONS = [
   {
     question: "Your friend group chat is planning — you're the one who...",
     options: [
-      { label: "📋 Made a spreadsheet already", types: ["The Planner", "The Mom Friend"] },
+      { label: "📋 Made a spreadsheet already", types: ["The Planner", "The Heart"] },
       { label: "🔥 Sends chaotic energy & memes", types: ["The Wild Card", "The Hype Person"] },
       { label: "🎯 Finds the coolest hidden gem spot", types: ["The Cultured One", "The Adventure Seeker"] },
-      { label: "💖 Makes sure everyone feels included", types: ["The Mom Friend", "The Hype Person"] },
+      { label: "💖 Makes sure everyone feels included", types: ["The Heart", "The Hype Person"] },
     ],
   },
   {
@@ -28,14 +28,14 @@ const QUESTIONS = [
     options: [
       { label: "🌉 Brunch → museum → sunset views", types: ["The Cultured One", "The Planner"] },
       { label: "🎤 Karaoke → late-night food crawl", types: ["The Wild Card", "The Hype Person"] },
-      { label: "🥾 Hike → farmers market → home cooking", types: ["The Adventure Seeker", "The Mom Friend"] },
+      { label: "🥾 Hike → farmers market → home cooking", types: ["The Adventure Seeker", "The Heart"] },
       { label: "🍸 Rooftop cocktails → underground comedy show", types: ["The Wild Card", "The Cultured One"] },
     ],
   },
   {
     question: "What do your friends always thank you for?",
     options: [
-      { label: "Keeping everyone safe & fed", types: ["The Mom Friend", "The Planner"] },
+      { label: "Keeping everyone safe & fed", types: ["The Heart", "The Planner"] },
       { label: "Making boring things fun", types: ["The Hype Person", "The Wild Card"] },
       { label: "Discovering the best new spots", types: ["The Cultured One", "The Adventure Seeker"] },
       { label: "Always saying YES to plans", types: ["The Wild Card", "The Adventure Seeker"] },
@@ -45,7 +45,7 @@ const QUESTIONS = [
     question: "Pick a weekend event that excites you most:",
     options: [
       { label: "🎵 Music festival in the park", types: ["The Hype Person", "The Wild Card"] },
-      { label: "🧘 Wellness retreat & sound bath", types: ["The Mom Friend", "The Cultured One"] },
+      { label: "🧘 Wellness retreat & sound bath", types: ["The Heart", "The Cultured One"] },
       { label: "🍜 Night market food crawl", types: ["The Adventure Seeker", "The Hype Person"] },
       { label: "🎭 Theater premiere + after-party", types: ["The Cultured One", "The Planner"] },
     ],
@@ -53,7 +53,7 @@ const QUESTIONS = [
 ];
 
 export const RESULTS: Record<string, { emoji: string; tagline: string; color: string }> = {
-  "The Mom Friend": { emoji: "🫶", tagline: "Heart of the crew", color: "hsl(var(--accent))" },
+  "The Heart": { emoji: "🫶", tagline: "Emotional core of the crew", color: "hsl(var(--accent))" },
   "The Wild Card": { emoji: "⚡", tagline: "Never a dull moment", color: "hsl(var(--primary))" },
   "The Planner": { emoji: "📋", tagline: "Always 3 steps ahead", color: "hsl(var(--secondary))" },
   "The Hype Person": { emoji: "👑", tagline: "Chief vibes officer", color: "hsl(var(--primary))" },

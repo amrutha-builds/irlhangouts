@@ -115,6 +115,7 @@ const SquadSidebar = ({
   onRejoinSquad,
   onCreateSquad,
   onDeleteSquad,
+  onJoinSquad,
 }: SquadSidebarProps) => {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";

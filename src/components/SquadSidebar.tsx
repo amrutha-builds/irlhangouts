@@ -14,8 +14,10 @@ import {
   RotateCcw,
   Pencil,
   Plus,
+  UserPlus,
 } from "lucide-react";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 import {
   Sidebar,
   SidebarContent,
@@ -93,6 +95,7 @@ interface SquadSidebarProps {
   onRejoinSquad: (squadId: string) => Promise<void>;
   onCreateSquad: (name: string, inviteCode: string) => Promise<void>;
   onDeleteSquad: (squadId: string) => Promise<void>;
+  onJoinSquad: (code: string) => Promise<{ success: boolean; message: string }>;
 }
 
 const SquadSidebar = ({
@@ -113,8 +116,10 @@ const SquadSidebar = ({
   onRejoinSquad,
   onCreateSquad,
   onDeleteSquad,
+  onJoinSquad,
 }: SquadSidebarProps) => {
   const { state } = useSidebar();
+  const { toast } = useToast();
   const collapsed = state === "collapsed";
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showNewFolder, setShowNewFolder] = useState(false);
@@ -129,7 +134,9 @@ const SquadSidebar = ({
   const [newSquadCode, setNewSquadCode] = useState("");
   const [creatingSquad, setCreatingSquad] = useState(false);
   const [newSquadCopied, setNewSquadCopied] = useState(false);
-
+  const [showJoinSquad, setShowJoinSquad] = useState(false);
+  const [joinCode, setJoinCode] = useState("");
+  const [joiningSquad, setJoiningSquad] = useState(false);
   const handleCopy = (e: React.MouseEvent, squad: Squad) => {
     e.stopPropagation();
     const url = `${window.location.origin}/join/${squad.invite_code}`;
@@ -167,6 +174,21 @@ const SquadSidebar = ({
     setNewSquadCode("");
     setCreatingSquad(false);
     setShowNewSquad(false);
+  };
+
+  const handleJoinSquad = async () => {
+    if (!joinCode.trim()) return;
+    setJoiningSquad(true);
+    const result = await onJoinSquad(joinCode.trim());
+    setJoiningSquad(false);
+    toast({
+      title: result.message,
+      variant: result.success ? "default" : "destructive",
+    });
+    if (result.success) {
+      setJoinCode("");
+      setShowJoinSquad(false);
+    }
   };
 
   // Squads not in any folder
@@ -393,6 +415,22 @@ const SquadSidebar = ({
                     )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+
+                {/* Join Squad button */}
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => {
+                      setJoinCode("");
+                      setShowJoinSquad(true);
+                    }}
+                    tooltip="Join a squad"
+                  >
+                    <UserPlus className="h-4 w-4 text-muted-foreground" />
+                    {!collapsed && (
+                      <span className="text-sm font-medium text-muted-foreground">Join Squad</span>
+                    )}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -599,6 +637,34 @@ const SquadSidebar = ({
               className="w-full rounded-xl bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {creatingSquad ? "Creating..." : "Create Squad"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Join squad dialog */}
+      <Dialog open={showJoinSquad} onOpenChange={setShowJoinSquad}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Join a Squad</DialogTitle>
+            <DialogDescription>Enter an invite code to join an existing squad.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <input
+              type="text"
+              placeholder="e.g. WEEKENDWARRIORS1234"
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+              onKeyDown={(e) => e.key === "Enter" && joinCode.trim() && !joiningSquad && handleJoinSquad()}
+              autoFocus
+              className="w-full rounded-xl border border-input bg-card px-4 py-2.5 text-sm font-mono tracking-wider text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <button
+              onClick={handleJoinSquad}
+              disabled={!joinCode.trim() || joiningSquad}
+              className="w-full rounded-xl bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              {joiningSquad ? "Joining..." : "Join Squad"}
             </button>
           </div>
         </DialogContent>

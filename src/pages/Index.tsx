@@ -310,9 +310,12 @@ const DashboardContent = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7 }}
             >
-              <h1 className="text-4xl font-bold tracking-tight text-primary-foreground md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-                {isMyPlansView ? "My Plans" : (squads.find((s) => s.id === activeView)?.name || "Squad Events")}
-              </h1>
+              <HeroTitle
+                isMyPlansView={isMyPlansView}
+                activeSquad={squads.find((s) => s.id === activeView)}
+                onRename={renameSquad}
+                userId={user?.id}
+              />
               <p className="mt-2 text-sm font-medium tracking-widest uppercase text-primary-foreground/50" style={{ fontFamily: "var(--font-body)" }}>
                 IRL Hangouts
               </p>

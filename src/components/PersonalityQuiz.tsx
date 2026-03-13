@@ -18,9 +18,9 @@ const QUESTIONS = [
     question: "Your friend group chat is planning — you're the one who...",
     options: [
       { label: "📋 Made a spreadsheet already", types: ["The Planner", "The Mom Friend"] },
-      { label: "🔥 Sends chaotic energy & memes", types: ["The Wild Card", "The Hype Queen"] },
+      { label: "🔥 Sends chaotic energy & memes", types: ["The Wild Card", "The Hype Person"] },
       { label: "🎯 Finds the coolest hidden gem spot", types: ["The Cultured One", "The Adventure Seeker"] },
-      { label: "💖 Makes sure everyone feels included", types: ["The Mom Friend", "The Hype Queen"] },
+      { label: "💖 Makes sure everyone feels included", types: ["The Mom Friend", "The Hype Person"] },
     ],
   },
   {

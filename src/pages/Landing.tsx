@@ -146,7 +146,7 @@ const Landing = () => {
                   <label className="mb-1.5 block text-sm font-medium text-foreground">Squad Name</label>
                   <input
                     type="text" value={squadName} onChange={(e) => setSquadName(e.target.value)}
-                    placeholder="e.g. The Fab Five" maxLength={50} required autoFocus
+                    placeholder="e.g. Weekend Warriors" maxLength={50} required autoFocus
                     className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>

@@ -21,9 +21,10 @@ const CATEGORIES = [
 
 interface AddEventDialogProps {
   onEventAdded: () => void;
+  squadId?: string | null;
 }
 
-const AddEventDialog = ({ onEventAdded }: AddEventDialogProps) => {
+const AddEventDialog = ({ onEventAdded, squadId }: AddEventDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -47,7 +48,8 @@ const AddEventDialog = ({ onEventAdded }: AddEventDialogProps) => {
       category,
       emoji: selectedEmoji,
       created_by: user.id,
-    });
+      squad_id: squadId || null,
+    } as any);
 
     if (error) {
       toast({ title: "Error", description: "Failed to add event", variant: "destructive" });

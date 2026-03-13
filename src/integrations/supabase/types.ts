@@ -25,6 +25,7 @@ export type Database = {
           id: string
           location: string
           source_url: string | null
+          squad_id: string | null
           title: string
         }
         Insert: {
@@ -37,6 +38,7 @@ export type Database = {
           id?: string
           location: string
           source_url?: string | null
+          squad_id?: string | null
           title: string
         }
         Update: {
@@ -49,9 +51,18 @@ export type Database = {
           id?: string
           location?: string
           source_url?: string | null
+          squad_id?: string | null
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_squad_id_fkey"
+            columns: ["squad_id"]
+            isOneToOne: false
+            referencedRelation: "squads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

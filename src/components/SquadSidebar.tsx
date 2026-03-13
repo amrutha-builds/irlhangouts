@@ -16,20 +16,6 @@ import {
   Plus,
   UserPlus,
 } from "lucide-react";
-  Copy,
-  Check,
-  LogOut,
-  FolderPlus,
-  FolderOpen,
-  Archive,
-  MoreHorizontal,
-  DoorOpen,
-  ArrowRightLeft,
-  Trash2,
-  RotateCcw,
-  Pencil,
-  Plus,
-} from "lucide-react";
 import { useState } from "react";
 import {
   Sidebar,

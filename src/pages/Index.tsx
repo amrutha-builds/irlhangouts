@@ -242,7 +242,7 @@ const DashboardContent = () => {
         <div className="relative h-[320px] overflow-hidden">
           <img
             src={heroImage}
-            alt="Five girlfriends laughing together at golden hour"
+            alt="A diverse group of friends laughing together outdoors"
             className="h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-foreground/30 via-foreground/20 to-background" />

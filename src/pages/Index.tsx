@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import heroImage from "@/assets/hero-friends-mixed.jpg";
 import EventCard from "@/components/EventCard";
 import EventDetailDialog from "@/components/EventDetailDialog";
-import { Sparkles, RefreshCw } from "lucide-react";
+import { Sparkles, RefreshCw, Pencil, Check } from "lucide-react";
 import AddEventDialog from "@/components/AddEventDialog";
 import PersonalityQuiz, { OnboardingQuiz } from "@/components/PersonalityQuiz";
 import LocationOnboarding from "@/components/LocationOnboarding";
@@ -36,6 +36,78 @@ interface Profile {
   personality_type: string | null;
   location?: string | null;
 }
+
+interface HeroTitleProps {
+  isMyPlansView: boolean;
+  activeSquad?: { id: string; name: string; created_by?: string | null };
+  onRename: (squadId: string, newName: string) => Promise<void>;
+  userId?: string;
+}
+
+const HeroTitle = ({ isMyPlansView, activeSquad, onRename, userId }: HeroTitleProps) => {
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const canEdit = !!activeSquad && !isMyPlansView;
+
+  const startEdit = () => {
+    if (!canEdit) return;
+    setEditName(activeSquad!.name);
+    setEditing(true);
+    setTimeout(() => inputRef.current?.focus(), 50);
+  };
+
+  const saveEdit = async () => {
+    if (!activeSquad || !editName.trim() || editName.trim() === activeSquad.name) {
+      setEditing(false);
+      return;
+    }
+    await onRename(activeSquad.id, editName.trim());
+    setEditing(false);
+  };
+
+  const displayName = isMyPlansView ? "My Plans" : (activeSquad?.name || "Squad Events");
+
+  if (editing) {
+    return (
+      <div className="flex items-center justify-center gap-2">
+        <input
+          ref={inputRef}
+          value={editName}
+          onChange={(e) => setEditName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") saveEdit();
+            if (e.key === "Escape") setEditing(false);
+          }}
+          onBlur={saveEdit}
+          className="bg-transparent text-center text-4xl font-bold tracking-tight text-primary-foreground md:text-5xl border-b-2 border-primary-foreground/50 outline-none"
+          style={{ fontFamily: "var(--font-display)" }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="group flex items-center justify-center gap-2">
+      <h1
+        className="text-4xl font-bold tracking-tight text-primary-foreground md:text-5xl"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        {displayName}
+      </h1>
+      {canEdit && (
+        <button
+          onClick={startEdit}
+          className="opacity-0 group-hover:opacity-100 transition-opacity rounded-full p-1.5 text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10"
+          title="Rename squad"
+        >
+          <Pencil className="h-5 w-5" />
+        </button>
+      )}
+    </div>
+  );
+};
 
 const DashboardContent = () => {
   const { user, signOut } = useAuth();
@@ -310,9 +382,12 @@ const DashboardContent = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7 }}
             >
-              <h1 className="text-4xl font-bold tracking-tight text-primary-foreground md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-                {isMyPlansView ? "My Plans" : (squads.find((s) => s.id === activeView)?.name || "Squad Events")}
-              </h1>
+              <HeroTitle
+                isMyPlansView={isMyPlansView}
+                activeSquad={squads.find((s) => s.id === activeView)}
+                onRename={renameSquad}
+                userId={user?.id}
+              />
               <p className="mt-2 text-sm font-medium tracking-widest uppercase text-primary-foreground/50" style={{ fontFamily: "var(--font-body)" }}>
                 IRL Hangouts
               </p>

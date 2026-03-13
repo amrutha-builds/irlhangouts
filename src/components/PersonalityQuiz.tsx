@@ -183,7 +183,7 @@ const PersonalityQuiz = ({ currentType, onComplete }: PersonalityQuizProps) => {
               </h2>
               <p className="text-muted-foreground">{resultData?.tagline}</p>
               <Button onClick={() => setOpen(false)} className="mt-2 rounded-full">
-                Love it! 💕
+                Nice! 🤙
               </Button>
             </motion.div>
           )}

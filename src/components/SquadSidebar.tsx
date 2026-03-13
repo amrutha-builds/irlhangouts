@@ -263,6 +263,16 @@ const SquadSidebar = ({
                     </DropdownMenuSub>
                   )}
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setRenameSquad(squad);
+                      setRenameSquadName(squad.name);
+                    }}
+                  >
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Rename Squad
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   {squad.member_count <= 1 ? (
                     <DropdownMenuItem
                       onClick={() => setDeleteConfirm(squad)}

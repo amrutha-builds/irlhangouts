@@ -39,7 +39,10 @@ const DashboardContent = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   useSquadSetup(user?.id);
-  const { squads, activeSquadId, setActiveSquadId, squadMemberIds, reload: reloadSquads } = useSquads(user?.id);
+  const {
+    squads, archivedSquads, folders, activeSquadId, setActiveSquadId, squadMemberIds,
+    reload: reloadSquads, createFolder, renameFolder, deleteFolder, moveToFolder, exitSquad, rejoinSquad,
+  } = useSquads(user?.id);
   const [activeView, setActiveView] = useState<string | null>(null);
   const [events, setEvents] = useState<DbEvent[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -261,12 +264,20 @@ const DashboardContent = () => {
       )}
       <SquadSidebar
         squads={squads}
+        archivedSquads={archivedSquads}
+        folders={folders}
         activeView={activeView}
         onSelectView={setActiveView}
         onSignOut={signOut}
         userName={currentProfile?.display_name}
         userEmoji={currentProfile?.emoji}
         myPlansCount={myRsvpEvents.length}
+        onCreateFolder={createFolder}
+        onRenameFolder={renameFolder}
+        onDeleteFolder={deleteFolder}
+        onMoveToFolder={moveToFolder}
+        onExitSquad={exitSquad}
+        onRejoinSquad={rejoinSquad}
       />
 
       <div className="flex-1 flex flex-col min-w-0">

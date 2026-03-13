@@ -24,7 +24,7 @@ interface AddEventDialogProps {
   squadId?: string | null;
 }
 
-const AddEventDialog = ({ onEventAdded }: AddEventDialogProps) => {
+const AddEventDialog = ({ onEventAdded, squadId }: AddEventDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);

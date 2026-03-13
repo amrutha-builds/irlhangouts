@@ -108,7 +108,7 @@ const Landing = () => {
           <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
             Let's Hang IRL          
           </h1>
-          <p className="text-sm text-muted-foreground">Discover events, RSVP with your crew, and never miss a night out ✨</p>
+          <p className="text-sm text-muted-foreground">Discover events, RSVP with your gang, and never miss a chance to hang IRL✨</p>
         </div>
 
         {/* Tabs */}

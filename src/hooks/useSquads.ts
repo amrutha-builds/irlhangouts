@@ -268,5 +268,6 @@ export const useSquads = (userId: string | undefined) => {
     rejoinSquad,
     createSquad,
     deleteSquad,
+    joinSquadByCode,
   };
 };

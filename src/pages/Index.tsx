@@ -39,7 +39,10 @@ const DashboardContent = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   useSquadSetup(user?.id);
-  const { squads, activeSquadId, setActiveSquadId, squadMemberIds, reload: reloadSquads } = useSquads(user?.id);
+  const {
+    squads, archivedSquads, folders, activeSquadId, setActiveSquadId, squadMemberIds,
+    reload: reloadSquads, createFolder, renameFolder, deleteFolder, moveToFolder, exitSquad, rejoinSquad,
+  } = useSquads(user?.id);
   const [activeView, setActiveView] = useState<string | null>(null);
   const [events, setEvents] = useState<DbEvent[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);

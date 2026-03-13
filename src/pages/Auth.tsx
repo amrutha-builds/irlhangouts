@@ -12,7 +12,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState<"options" | "signin" | "signup">("options");
+  const [mode, setMode] = useState<"options" | "email">("options");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -46,24 +46,6 @@ const Auth = () => {
     }
   };
 
-  const handleEmailSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { emailRedirectTo: window.location.origin },
-      });
-      if (error) throw error;
-      toast({ title: "Check your email", description: "We sent you a verification link to confirm your account." });
-      setLoading(false);
-    } catch (err: any) {
-      toast({ title: "Sign up failed", description: err.message, variant: "destructive" });
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <motion.div
@@ -79,7 +61,7 @@ const Auth = () => {
           <Sparkles className="h-6 w-6 text-primary" />
         </div>
         <p className="mb-8 text-muted-foreground">
-          Sign in to plan your next get-together with friends
+          Sign in to get back to your squad
         </p>
 
         {mode === "options" ? (
@@ -105,21 +87,23 @@ const Auth = () => {
             </div>
 
             <button
-              onClick={() => setMode("signin")}
+              onClick={() => setMode("email")}
               className="flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-card py-3 font-medium text-card-foreground transition-all hover:bg-accent"
             >
               <Mail className="h-5 w-5" />
               Sign in with Email
             </button>
-            <button
-              onClick={() => setMode("signup")}
-              className="w-full text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Don't have an account? <span className="text-primary">Sign up</span>
-            </button>
+
+            <p className="pt-2 text-xs text-muted-foreground">
+              Don't have an account?{" "}
+              <button onClick={() => navigate("/")} className="text-primary hover:underline">
+                Create or join a squad
+              </button>{" "}
+              to get started.
+            </p>
           </div>
         ) : (
-          <form onSubmit={mode === "signin" ? handleEmailSignIn : handleEmailSignUp} className="space-y-3">
+          <form onSubmit={handleEmailSignIn} className="space-y-3">
             <input
               type="email"
               placeholder="Email"
@@ -134,7 +118,6 @@ const Auth = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              minLength={6}
               className="w-full rounded-xl border border-input bg-card px-4 py-3 text-sm text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
             <button
@@ -142,14 +125,7 @@ const Auth = () => {
               disabled={loading}
               className="w-full rounded-xl bg-primary py-3 font-medium text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-50"
             >
-              {loading ? "Please wait..." : mode === "signin" ? "Sign In" : "Create Account"}
-            </button>
-            <button
-              type="button"
-              onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); }}
-              className="w-full text-sm text-muted-foreground hover:text-foreground"
-            >
-              {mode === "signin" ? "Need an account? Sign up" : "Already have an account? Sign in"}
+              {loading ? "Signing in..." : "Sign In"}
             </button>
             <button
               type="button"

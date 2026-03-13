@@ -190,7 +190,7 @@ const DashboardContent = () => {
   const currentProfile = profiles.find((p) => p.id === user?.id);
 
   // Build events with only squad member friends
-  const eventsWithFriends = filteredEvents
+  const eventsWithFriends = events
     .map((event) => ({
       ...event,
       friends: squadProfiles.map((p) => ({

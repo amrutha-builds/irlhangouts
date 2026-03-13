@@ -107,7 +107,7 @@ const Landing = () => {
             Let's Hang IRL
           </h1>
           <p className="max-w-xs text-sm text-muted-foreground">
-            Plan events with your crew. Create a squad, invite friends, and never miss a hangout ✨
+            Create a squad, discover events together, and never miss a hangout ✨
           </p>
         </div>
 

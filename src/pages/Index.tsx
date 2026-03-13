@@ -25,6 +25,8 @@ interface DbEvent {
   emoji: string;
   source_url: string | null;
   description: string | null;
+  created_by: string | null;
+  squad_id: string | null;
 }
 
 interface Profile {
@@ -444,6 +446,17 @@ const DashboardContent = () => {
           onOpenChange={(open) => !open && setSelectedEventId(null)}
           event={selectedEventId ? [...eventsWithFriends, ...myRsvpEvents].find((e) => e.id === selectedEventId) ?? null : null}
           onToggleRsvp={() => selectedEventId && !isMyPlansView && toggleRsvp(selectedEventId)}
+          currentUserId={user?.id}
+          onDelete={async (eventId) => {
+            const { error } = await supabase.from("events").delete().eq("id", eventId);
+            if (error) {
+              toast({ title: "Error", description: "Failed to delete event", variant: "destructive" });
+            } else {
+              toast({ title: "Event deleted" });
+              setSelectedEventId(null);
+              await loadData();
+            }
+          }}
         />
 
       </div>

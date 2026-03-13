@@ -693,6 +693,33 @@ const SquadSidebar = ({
           </div>
         </DialogContent>
       </Dialog>
+      {/* Rename squad dialog */}
+      <Dialog open={!!renameSquad} onOpenChange={(o) => !o && setRenameSquad(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Rename Squad</DialogTitle>
+            <DialogDescription>Give your squad a new name.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <input
+              type="text"
+              placeholder="New squad name"
+              value={renameSquadName}
+              onChange={(e) => setRenameSquadName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && renameSquadName.trim() && !renamingSquad && handleRenameSquad()}
+              autoFocus
+              className="w-full rounded-xl border border-input bg-card px-4 py-2.5 text-sm text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <button
+              onClick={handleRenameSquad}
+              disabled={!renameSquadName.trim() || renamingSquad}
+              className="w-full rounded-xl bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              {renamingSquad ? "Renaming..." : "Rename Squad"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

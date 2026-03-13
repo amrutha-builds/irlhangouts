@@ -13,6 +13,7 @@ import {
   Trash2,
   RotateCcw,
   Pencil,
+  Plus,
 } from "lucide-react";
 import { useState } from "react";
 import {

@@ -27,7 +27,7 @@ const QUESTIONS = [
     question: "Pick your ideal SF Bay Area day:",
     options: [
       { label: "🌉 Brunch in Hayes Valley → museum → sunset at Baker Beach", types: ["The Cultured One", "The Planner"] },
-      { label: "🎤 Karaoke in Japantown → late-night ramen", types: ["The Wild Card", "The Hype Queen"] },
+      { label: "🎤 Karaoke in Japantown → late-night ramen", types: ["The Wild Card", "The Hype Person"] },
       { label: "🥾 Hike Muir Woods → farmers market → home cooking", types: ["The Adventure Seeker", "The Mom Friend"] },
       { label: "🍸 Rooftop cocktails → underground comedy show", types: ["The Wild Card", "The Cultured One"] },
     ],

@@ -624,6 +624,34 @@ const SquadSidebar = ({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Join squad dialog */}
+      <Dialog open={showJoinSquad} onOpenChange={setShowJoinSquad}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Join a Squad</DialogTitle>
+            <DialogDescription>Enter an invite code to join an existing squad.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <input
+              type="text"
+              placeholder="e.g. WEEKENDWARRIORS1234"
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+              onKeyDown={(e) => e.key === "Enter" && joinCode.trim() && !joiningSquad && handleJoinSquad()}
+              autoFocus
+              className="w-full rounded-xl border border-input bg-card px-4 py-2.5 text-sm font-mono tracking-wider text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <button
+              onClick={handleJoinSquad}
+              disabled={!joinCode.trim() || joiningSquad}
+              className="w-full rounded-xl bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              {joiningSquad ? "Joining..." : "Join Squad"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

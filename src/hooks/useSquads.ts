@@ -138,13 +138,21 @@ export const useSquads = (userId: string | undefined) => {
   }, [loadSquads]);
 
   const deleteFolder = useCallback(async (folderId: string) => {
-    // Move squads out of folder first (set folder_id to null)
-    if (userId) {
-      await supabase
-        .from("squad_members")
-        .update({ folder_id: null } as any)
-        .eq("user_id", userId)
-        .eq("folder_id" as any, folderId);
+    if (!userId) return;
+    // Move squads out of folder first
+    const { data: members } = await supabase
+      .from("squad_members")
+      .select("id")
+      .eq("user_id", userId);
+    
+    // Update members in this folder to have no folder
+    if (members) {
+      for (const m of members) {
+        await supabase
+          .from("squad_members")
+          .update({ folder_id: null } as any)
+          .eq("id", m.id);
+      }
     }
     await supabase.from("squad_folders").delete().eq("id", folderId);
     await loadSquads();

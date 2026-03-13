@@ -68,11 +68,15 @@ const DashboardContent = () => {
   useEffect(() => {
     if (user?.id) {
       reloadSquads();
-      // Check if user has a location set
-      supabase.from("profiles").select("location").eq("id", user.id).single().then(({ data }) => {
+      // Check if user has location and personality type set
+      supabase.from("profiles").select("location, personality_type").eq("id", user.id).single().then(({ data }) => {
         const loc = (data as any)?.location;
+        const personality = (data as any)?.personality_type;
         if (loc) {
           setUserLocation(loc);
+          if (!personality) {
+            setShowOnboardingQuiz(true);
+          }
         } else {
           setShowLocationOnboarding(true);
         }

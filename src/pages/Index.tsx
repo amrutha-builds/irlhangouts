@@ -5,7 +5,7 @@ import EventCard from "@/components/EventCard";
 import EventDetailDialog from "@/components/EventDetailDialog";
 import { Sparkles, RefreshCw } from "lucide-react";
 import AddEventDialog from "@/components/AddEventDialog";
-import PersonalityQuiz from "@/components/PersonalityQuiz";
+import PersonalityQuiz, { OnboardingQuiz } from "@/components/PersonalityQuiz";
 import LocationOnboarding from "@/components/LocationOnboarding";
 import SquadSidebar from "@/components/SquadSidebar";
 import { supabase } from "@/integrations/supabase/client";

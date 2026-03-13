@@ -353,21 +353,7 @@ const DashboardContent = () => {
         )}
 
         {/* Filter bar */}
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 pb-4">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setWeekendOnly(false)}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${!weekendOnly ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"}`}
-            >
-              All Events
-            </button>
-            <button
-              onClick={() => setWeekendOnly(true)}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${weekendOnly ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"}`}
-            >
-              🎉 Weekends Only
-            </button>
-          </div>
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-end gap-3 px-4 pb-4">
           {!isMyPlansView && <AddEventDialog onEventAdded={loadData} squadId={effectiveSquadId} />}
         </div>
 

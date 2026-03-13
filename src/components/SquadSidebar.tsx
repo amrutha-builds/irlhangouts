@@ -540,6 +540,30 @@ const SquadSidebar = ({
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Delete squad confirmation */}
+      <AlertDialog open={!!deleteConfirm} onOpenChange={(o) => !o && setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete "{deleteConfirm?.name}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the squad. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteConfirm) onDeleteSquad(deleteConfirm.id);
+                setDeleteConfirm(null);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Squad
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* New squad dialog */}
       <Dialog open={showNewSquad} onOpenChange={setShowNewSquad}>
         <DialogContent className="sm:max-w-sm">

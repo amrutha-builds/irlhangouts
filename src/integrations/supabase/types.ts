@@ -59,6 +59,7 @@ export type Database = {
           display_name: string
           emoji: string
           id: string
+          location: string | null
           personality_type: string | null
         }
         Insert: {
@@ -66,6 +67,7 @@ export type Database = {
           display_name: string
           emoji?: string
           id: string
+          location?: string | null
           personality_type?: string | null
         }
         Update: {
@@ -73,6 +75,7 @@ export type Database = {
           display_name?: string
           emoji?: string
           id?: string
+          location?: string | null
           personality_type?: string | null
         }
         Relationships: []

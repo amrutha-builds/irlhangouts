@@ -6,6 +6,7 @@ import EventDetailDialog from "@/components/EventDetailDialog";
 import { Sparkles, RefreshCw } from "lucide-react";
 import AddEventDialog from "@/components/AddEventDialog";
 import PersonalityQuiz from "@/components/PersonalityQuiz";
+import LocationOnboarding from "@/components/LocationOnboarding";
 import SquadSidebar from "@/components/SquadSidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,6 +32,7 @@ interface Profile {
   display_name: string;
   emoji: string;
   personality_type: string | null;
+  location?: string | null;
 }
 
 const DashboardContent = () => {
@@ -47,7 +49,8 @@ const DashboardContent = () => {
   const [scraping, setScraping] = useState(false);
   const [weekendOnly, setWeekendOnly] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-
+  const [showLocationOnboarding, setShowLocationOnboarding] = useState(false);
+  const [userLocation, setUserLocation] = useState<string | null>(null);
   const isMyPlansView = activeView === "my-plans";
   const effectiveSquadId = isMyPlansView ? null : activeView;
 
@@ -62,7 +65,18 @@ const DashboardContent = () => {
 
   // Reload squads after squad setup completes
   useEffect(() => {
-    if (user?.id) reloadSquads();
+    if (user?.id) {
+      reloadSquads();
+      // Check if user has a location set
+      supabase.from("profiles").select("location").eq("id", user.id).single().then(({ data }) => {
+        const loc = (data as any)?.location;
+        if (loc) {
+          setUserLocation(loc);
+        } else {
+          setShowLocationOnboarding(true);
+        }
+      });
+    }
   }, [user?.id]);
 
   // Default to first squad view when squads load and no view selected
@@ -142,7 +156,9 @@ const DashboardContent = () => {
     toast({ title: "🔍 Finding events...", description: "Scraping SF Bay Area event sources. This may take a minute." });
 
     try {
-      const { data, error } = await supabase.functions.invoke("scrape-events");
+      const { data, error } = await supabase.functions.invoke("scrape-events", {
+        body: { location: userLocation || "San Jose, CA" },
+      });
       if (error) throw error;
       if (data?.success) {
         toast({ title: "✨ Events updated!", description: `Found ${data.eventsFound} events from ${data.sources} sources.` });
@@ -213,6 +229,16 @@ const DashboardContent = () => {
 
   return (
     <div className="flex min-h-screen w-full">
+      {user && (
+        <LocationOnboarding
+          open={showLocationOnboarding}
+          userId={user.id}
+          onComplete={(loc) => {
+            setUserLocation(loc);
+            setShowLocationOnboarding(false);
+          }}
+        />
+      )}
       <SquadSidebar
         squads={squads}
         activeView={activeView}

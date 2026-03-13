@@ -5,7 +5,7 @@ import EventCard from "@/components/EventCard";
 import EventDetailDialog from "@/components/EventDetailDialog";
 import { Sparkles, RefreshCw } from "lucide-react";
 import AddEventDialog from "@/components/AddEventDialog";
-import PersonalityQuiz from "@/components/PersonalityQuiz";
+import PersonalityQuiz, { OnboardingQuiz } from "@/components/PersonalityQuiz";
 import LocationOnboarding from "@/components/LocationOnboarding";
 import SquadSidebar from "@/components/SquadSidebar";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,6 +50,7 @@ const DashboardContent = () => {
   const [weekendOnly, setWeekendOnly] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [showLocationOnboarding, setShowLocationOnboarding] = useState(false);
+  const [showOnboardingQuiz, setShowOnboardingQuiz] = useState(false);
   const [userLocation, setUserLocation] = useState<string | null>(null);
   const isMyPlansView = activeView === "my-plans";
   const effectiveSquadId = isMyPlansView ? null : activeView;
@@ -67,11 +68,15 @@ const DashboardContent = () => {
   useEffect(() => {
     if (user?.id) {
       reloadSquads();
-      // Check if user has a location set
-      supabase.from("profiles").select("location").eq("id", user.id).single().then(({ data }) => {
+      // Check if user has location and personality type set
+      supabase.from("profiles").select("location, personality_type").eq("id", user.id).single().then(({ data }) => {
         const loc = (data as any)?.location;
+        const personality = (data as any)?.personality_type;
         if (loc) {
           setUserLocation(loc);
+          if (!personality) {
+            setShowOnboardingQuiz(true);
+          }
         } else {
           setShowLocationOnboarding(true);
         }
@@ -236,6 +241,21 @@ const DashboardContent = () => {
           onComplete={(loc) => {
             setUserLocation(loc);
             setShowLocationOnboarding(false);
+            // Check if they also need the quiz
+            const profile = profiles.find((p) => p.id === user.id);
+            if (!profile?.personality_type) {
+              setShowOnboardingQuiz(true);
+            }
+          }}
+        />
+      )}
+      {user && (
+        <OnboardingQuiz
+          open={showOnboardingQuiz}
+          onComplete={async (type) => {
+            await supabase.from("profiles").update({ personality_type: type }).eq("id", user.id);
+            setProfiles((prev) => prev.map((p) => p.id === user.id ? { ...p, personality_type: type } : p));
+            setShowOnboardingQuiz(false);
           }}
         />
       )}

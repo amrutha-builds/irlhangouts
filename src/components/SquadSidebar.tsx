@@ -118,6 +118,7 @@ const SquadSidebar = ({
   onCreateSquad,
   onDeleteSquad,
   onJoinSquad,
+  onRenameSquad,
 }: SquadSidebarProps) => {
   const { state } = useSidebar();
   const { toast } = useToast();

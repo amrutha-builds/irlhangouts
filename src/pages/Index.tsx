@@ -378,7 +378,7 @@ const DashboardContent = () => {
               🎉 Weekends Only
             </button>
           </div>
-          {!isMyPlansView && <AddEventDialog onEventAdded={loadData} />}
+          {!isMyPlansView && <AddEventDialog onEventAdded={loadData} squadId={effectiveSquadId} />}
         </div>
 
         {/* Events */}

@@ -260,7 +260,7 @@ const DashboardContent = () => {
                 <Sparkles className="h-5 w-5 text-primary-foreground" />
               </div>
               <h1 className="text-4xl font-bold tracking-tight text-primary-foreground md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-                Girls' Night Agenda
+                IRL Hangouts
               </h1>
             </motion.div>
           </div>

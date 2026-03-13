@@ -363,6 +363,23 @@ const SquadSidebar = ({
 
                 {/* Unfoldered squads */}
                 {unfolderedSquads.map(renderSquadItem)}
+
+                {/* New Squad button */}
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => {
+                      setNewSquadName("");
+                      setNewSquadCode("");
+                      setShowNewSquad(true);
+                    }}
+                    tooltip="Create new squad"
+                  >
+                    <Plus className="h-4 w-4 text-primary" />
+                    {!collapsed && (
+                      <span className="text-sm font-medium text-primary">New Squad</span>
+                    )}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

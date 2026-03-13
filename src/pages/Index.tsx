@@ -65,7 +65,18 @@ const DashboardContent = () => {
 
   // Reload squads after squad setup completes
   useEffect(() => {
-    if (user?.id) reloadSquads();
+    if (user?.id) {
+      reloadSquads();
+      // Check if user has a location set
+      supabase.from("profiles").select("location").eq("id", user.id).single().then(({ data }) => {
+        const loc = (data as any)?.location;
+        if (loc) {
+          setUserLocation(loc);
+        } else {
+          setShowLocationOnboarding(true);
+        }
+      });
+    }
   }, [user?.id]);
 
   // Default to first squad view when squads load and no view selected

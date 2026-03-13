@@ -44,9 +44,9 @@ const QUESTIONS = [
   {
     question: "Pick a weekend event that excites you most:",
     options: [
-      { label: "🎵 Music festival in Golden Gate Park", types: ["The Hype Queen", "The Wild Card"] },
+      { label: "🎵 Music festival in Golden Gate Park", types: ["The Hype Person", "The Wild Card"] },
       { label: "🧘 Wellness retreat & sound bath", types: ["The Mom Friend", "The Cultured One"] },
-      { label: "🍜 Night market food crawl", types: ["The Adventure Seeker", "The Hype Queen"] },
+      { label: "🍜 Night market food crawl", types: ["The Adventure Seeker", "The Hype Person"] },
       { label: "🎭 Theater premiere + after-party", types: ["The Cultured One", "The Planner"] },
     ],
   },

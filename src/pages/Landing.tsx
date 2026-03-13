@@ -3,12 +3,36 @@ import { motion } from "framer-motion";
 import { Sparkles, ArrowRight, Copy, Check, Users, Plus, LogIn } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import EventCard from "@/components/EventCard";
+
+interface LandingEvent {
+  id: string;
+  title: string;
+  date: string;
+  location: string;
+  category: string;
+  emoji: string;
+  source_url: string | null;
+  description: string | null;
+}
 
 const Landing = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [city, setCity] = useState("");
+  const [submittedCity, setSubmittedCity] = useState("");
+  const [events, setEvents] = useState<LandingEvent[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<LandingEvent | null>(null);
+  const [showActionModal, setShowActionModal] = useState(false);
+
+  // Returning user state
+  const [userProfile, setUserProfile] = useState<{ display_name: string; emoji: string; location: string | null } | null>(null);
+
+  // Squad creation state
   const [squadName, setSquadName] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [codeError, setCodeError] = useState("");
   const [copied, setCopied] = useState(false);
@@ -59,6 +83,9 @@ const Landing = () => {
     }
   }, [location.search]);
 
+  const isLoggedIn = !!user;
+
+  // For logged-in users: load profile and auto-populate location
   useEffect(() => {
     if (created) return;
     const name = squadName.trim();
@@ -74,145 +101,235 @@ const Landing = () => {
     }
   }, [user, navigate]);
 
-  const handleCreateSquad = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    const code = inviteCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-    if (code.length < 4) { setCodeError("Code must be at least 4 characters"); return; }
-    if (code.length > 20) { setCodeError("Code must be 20 characters or less"); return; }
-    if (!squadName.trim()) return;
-    sessionStorage.setItem("pending_squad", JSON.stringify({ name: squadName.trim(), invite_code: code }));
-    setInviteCode(code);
-    setCreated(true);
+    if (!city.trim()) return;
+    await loadEventsForCity(city.trim());
   };
 
-  const handleJoinSquad = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleEventClick = (event: LandingEvent) => {
+    if (isLoggedIn) {
+      // Logged-in users go straight to dashboard
+      navigate("/dashboard");
+      return;
+    }
+    setSelectedEvent(event);
+    setShowActionModal(true);
+    setCodeError("");
+    setSquadName("");
+    setJoinCode("");
+  };
+
+  const handleCreateSquad = () => {
+    if (!squadName.trim()) return;
+    const base = squadName.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
+    const suffix = Math.floor(1000 + Math.random() * 9000);
+    const code = `${base}${suffix}`;
+    sessionStorage.setItem("pending_squad", JSON.stringify({ name: squadName.trim(), invite_code: code }));
+    navigate("/auth");
+  };
+
+  const handleJoinSquad = () => {
     const code = joinCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
     if (code.length < 4) { setCodeError("Code must be at least 4 characters"); return; }
     sessionStorage.setItem("join_squad_code", code);
     navigate("/auth");
   };
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/join/${inviteCode}`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  useEffect(() => {
+    if (!authLoading && user) navigate("/dashboard", { replace: true });
+  }, [user, authLoading, navigate]);
 
-  if (created) {
+  if (authLoading || user) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex w-full max-w-sm flex-col items-center gap-6 text-center">
-          <span className="text-5xl">🎉</span>
-          <div>
-            <h2 className="text-2xl font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
-              Squad Ready!
-            </h2>
-            <p className="mt-2 text-sm text-muted-foreground">Share this link with your crew</p>
-          </div>
-          <div className="w-full rounded-xl border border-border bg-card p-4">
-            <p className="mb-2 text-xs font-medium text-muted-foreground">Share Link</p>
-            <div className="flex items-center gap-2">
-              <code className="flex-1 truncate rounded-lg bg-muted px-3 py-2 text-sm font-medium text-foreground">
-                {window.location.origin}/join/{inviteCode}
-              </code>
-              <button onClick={handleCopy} className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90">
-                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              </button>
-            </div>
-          </div>
-          <button onClick={() => navigate("/auth")} className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-medium text-primary-foreground hover:bg-primary/90">
-            Sign Up to Continue <ArrowRight className="h-4 w-4" />
-          </button>
-        </motion.div>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex w-full max-w-lg flex-col items-center gap-10">
-
-        {/* Header */}
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-            <Users className="h-8 w-8 text-primary" />
-          </div>
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-xs font-medium tracking-widest uppercase text-muted-foreground">IRL Events</span>
-            <Sparkles className="h-4 w-4 text-primary" />
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
-            Let's Hang IRL
-          </h1>
-          <p className="max-w-xs text-sm text-muted-foreground">
-            Plan events with your crew. Create a squad, invite friends, and never miss a hangout ✨
-          </p>
-        </div>
-
-        {/* Three clear pathways */}
-        <div className="flex w-full flex-col gap-3">
-
-          {/* Option 1: Create a Squad */}
-          <motion.div layout className="w-full">
+    <div className="min-h-screen bg-background">
+      {/* Hero */}
+      <div className="relative overflow-hidden bg-primary px-4 pb-12 pt-16 text-center">
+        {/* Top bar for logged-in users */}
+        {isLoggedIn && userProfile && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute right-4 top-4 flex items-center gap-3"
+          >
+            <span className="text-sm text-primary-foreground/80">
+              {userProfile.emoji} {userProfile.display_name}
+            </span>
             <button
-              onClick={() => { setActivePanel(activePanel === "create" ? "none" : "create"); setCodeError(""); }}
-              className={`flex w-full items-center gap-4 rounded-2xl border p-5 text-left transition-all ${
-                activePanel === "create"
-                  ? "border-primary bg-primary/5 shadow-md"
-                  : "border-border bg-card hover:border-primary/40 hover:shadow-sm"
-              }`}
+              onClick={() => navigate("/dashboard")}
+              className="flex items-center gap-1.5 rounded-lg bg-primary-foreground/15 px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary-foreground/25 transition-colors"
             >
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                <Plus className="h-6 w-6 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>Start a New Squad</p>
-                <p className="text-xs text-muted-foreground">Create a group & get an invite code to share</p>
-              </div>
-              <ArrowRight className={`h-4 w-4 text-muted-foreground transition-transform ${activePanel === "create" ? "rotate-90" : ""}`} />
+              <LayoutDashboard className="h-3.5 w-3.5" />
+              Dashboard
             </button>
-
-            {activePanel === "create" && (
-              <motion.form
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                onSubmit={handleCreateSquad}
-                className="mt-2 space-y-3 rounded-2xl border border-border bg-card p-5"
-              >
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-foreground">Squad Name</label>
-                  <input
-                    type="text" value={squadName} onChange={(e) => setSquadName(e.target.value)}
-                    placeholder="e.g. Weekend Warriors" maxLength={50} required autoFocus
-                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-foreground">Invite Code</label>
-                  <input
-                    type="text" value={inviteCode}
-                    onChange={(e) => { setInviteCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")); setCodeError(""); }}
-                    maxLength={20} required
-                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-center text-lg font-medium tracking-widest uppercase text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="Auto-generated"
-                  />
-                  {codeError && <p className="mt-1 text-sm text-destructive">{codeError}</p>}
-                </div>
-                <button type="submit" className="w-full rounded-xl bg-primary py-3 font-medium text-primary-foreground hover:bg-primary/90">
-                  Create Squad ✨
-                </button>
-              </motion.form>
-            )}
           </motion.div>
+        )}
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mx-auto max-w-lg"
+        >
+          <h1
+            className="mb-2 text-4xl font-bold tracking-tight text-primary-foreground md:text-5xl"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            {isLoggedIn ? `Hey ${userProfile?.display_name?.split(" ")[0] || "there"} 👋` : "Let's Hang IRL"}
+          </h1>
+          <p className="mb-8 text-sm text-primary-foreground/70">
+            {isLoggedIn
+              ? "Here's what's happening near you this weekend"
+              : "Discover events near you and plan hangouts with your squad ✨"}
+          </p>
+
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <div className="relative flex-1">
+              <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Enter your city (e.g. San Jose, CA)"
+                className="w-full rounded-xl border border-border bg-background py-3 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading || !city.trim()}
+              className="flex items-center gap-2 rounded-xl bg-card px-5 py-3 text-sm font-medium text-foreground transition-all hover:bg-accent disabled:opacity-50"
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+              Find Events
+            </button>
+          </form>
+        </motion.div>
+      </div>
+
+      {/* Events Grid */}
+      <div className="mx-auto max-w-5xl px-4 py-8">
+        {loading && (
+          <div className="flex flex-col items-center gap-3 py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">
+              Finding events near {submittedCity}...
+            </p>
+          </div>
+        )}
+
+        {!loading && hasSearched && events.length === 0 && (
+          <div className="py-20 text-center">
+            <p className="text-lg text-muted-foreground">No events found. Try a different city!</p>
+          </div>
+        )}
+
+        {!loading && events.length > 0 && (
+          <>
+            <p className="mb-6 text-sm text-muted-foreground">
+              {submittedCity ? `Events near ${submittedCity}` : "Upcoming events"}
+              {isLoggedIn ? " — tap to RSVP from your dashboard" : " — tap any event to get started"}
+            </p>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {events.map((event, i) => (
+                <EventCard
+                  key={event.id}
+                  title={event.title}
+                  date={event.date}
+                  location={event.location}
+                  category={event.category}
+                  emoji={event.emoji}
+                  source_url={event.source_url}
+                  description={event.description}
+                  friends={[]}
+                  index={i}
+                  onClick={() => handleEventClick(event)}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {!hasSearched && !loading && (
+          <div className="py-20 text-center">
+            <p className="text-lg text-muted-foreground">
+              Enter your city above to discover weekend events near you 🎉
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Action Modal — only for anonymous users */}
+      <AnimatePresence>
+        {showActionModal && !isLoggedIn && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+            onClick={() => setShowActionModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-sm rounded-2xl border border-border bg-card p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setShowActionModal(false)}
+                className="absolute right-3 top-3 rounded-full p-1 text-muted-foreground hover:bg-muted"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              {selectedEvent && (
+                <div className="mb-5">
+                  <span className="text-3xl">{selectedEvent.emoji}</span>
+                  <h3
+                    className="mt-2 text-lg font-semibold text-foreground"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    {selectedEvent.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">{selectedEvent.date} · {selectedEvent.location}</p>
+                </div>
+              )}
+
+              <p className="mb-4 text-sm text-muted-foreground">
+                Sign in or create a squad to RSVP and plan with friends
+              </p>
+
+              <div className="flex flex-col gap-3">
+                {/* Start a Squad */}
+                <div className="rounded-xl border border-border p-4">
+                  <div className="mb-2 flex items-center gap-2">
+                    <Plus className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>Start a New Squad</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={squadName}
+                      onChange={(e) => setSquadName(e.target.value)}
+                      placeholder="Squad name"
+                      maxLength={50}
+                      className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                    <button
+                      onClick={handleCreateSquad}
+                      disabled={!squadName.trim()}
+                      className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                    >
+                      Go
+                    </button>
+                  </div>
+                </div>
 
           {/* Option 2: Join a Squad */}
           <motion.div layout className="w-full">
@@ -240,55 +357,20 @@ const Landing = () => {
               <ArrowRight className={`h-4 w-4 text-muted-foreground transition-transform ${activePanel === "join" ? "rotate-90" : ""}`} />
             </button>
 
-            {activePanel === "join" && (
-              <motion.form
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                onSubmit={handleJoinSquad}
-                className="mt-2 space-y-3 rounded-2xl border border-border bg-card p-5"
-              >
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-foreground">Invite Code</label>
-                  <input
-                    type="text" value={joinCode}
-                    onChange={(e) => { setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")); setCodeError(""); }}
-                    maxLength={20} required autoFocus
-                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-center text-lg font-medium tracking-widest uppercase text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="Enter code"
-                  />
-                  {codeError && <p className="mt-1 text-sm text-destructive">{codeError}</p>}
+                {/* Divider */}
+                <div className="flex items-center gap-3">
+                  <div className="h-px flex-1 bg-border" />
+                  <span className="text-xs text-muted-foreground">or</span>
+                  <div className="h-px flex-1 bg-border" />
                 </div>
                 <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-medium text-primary-foreground hover:bg-primary/90">
                   {pendingJoinCode ? "Sign in to join" : "Join Squad"} <ArrowRight className="h-4 w-4" />
                 </button>
-              </motion.form>
-            )}
+              </div>
+            </motion.div>
           </motion.div>
-
-          {/* Divider */}
-          <div className="flex items-center gap-3 py-1">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-xs font-medium text-muted-foreground">Already in a squad?</span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
-
-          {/* Option 3: Sign In */}
-          <button
-            onClick={() => navigate("/auth")}
-            className="flex w-full items-center gap-4 rounded-2xl border border-border bg-card p-5 text-left transition-all hover:border-primary/40 hover:shadow-sm"
-          >
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-secondary">
-              <LogIn className="h-6 w-6 text-secondary-foreground" />
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>Sign In</p>
-              <p className="text-xs text-muted-foreground">Jump back into your squad</p>
-            </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground" />
-          </button>
-        </div>
-      </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

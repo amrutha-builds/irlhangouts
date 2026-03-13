@@ -174,6 +174,17 @@ const SquadSidebar = ({
     setShowNewSquad(false);
   };
 
+  const handleJoinSquad = async () => {
+    if (!joinCode.trim()) return;
+    setJoiningSquad(true);
+    const result = await onJoinSquad(joinCode.trim());
+    setJoiningSquad(false);
+    if (result.success) {
+      setJoinCode("");
+      setShowJoinSquad(false);
+    }
+  };
+
   // Squads not in any folder
   const unfolderedSquads = squads.filter((s) => !s.folder_id);
   // Squads grouped by folder

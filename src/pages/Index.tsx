@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import heroImage from "@/assets/hero-friends-mixed.jpg";
 import EventCard from "@/components/EventCard";

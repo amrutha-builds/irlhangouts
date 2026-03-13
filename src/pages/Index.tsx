@@ -279,6 +279,7 @@ const DashboardContent = () => {
         onExitSquad={exitSquad}
         onRejoinSquad={rejoinSquad}
         onCreateSquad={createSquad}
+        onDeleteSquad={deleteSquad}
       />
 
       <div className="flex-1 flex flex-col min-w-0">

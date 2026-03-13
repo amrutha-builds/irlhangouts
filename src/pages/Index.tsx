@@ -281,11 +281,7 @@ const DashboardContent = () => {
         onCreateSquad={createSquad}
         onDeleteSquad={deleteSquad}
         onJoinSquad={joinSquadByCode}
-        onRenameSquad={(id, name) => {
-          const hook = require("@/hooks/useSquads");
-          // This is a placeholder - I need to check how to access the rename function
-          console.log("Rename squad", id, name);
-        }}
+        onRenameSquad={renameSquad}
       />
 
       <div className="flex-1 flex flex-col min-w-0">

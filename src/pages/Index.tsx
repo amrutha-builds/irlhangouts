@@ -49,7 +49,8 @@ const DashboardContent = () => {
   const [scraping, setScraping] = useState(false);
   const [weekendOnly, setWeekendOnly] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-
+  const [showLocationOnboarding, setShowLocationOnboarding] = useState(false);
+  const [userLocation, setUserLocation] = useState<string | null>(null);
   const isMyPlansView = activeView === "my-plans";
   const effectiveSquadId = isMyPlansView ? null : activeView;
 

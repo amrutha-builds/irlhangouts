@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import heroImage from "@/assets/hero-friends.jpg";
+import heroImage from "@/assets/hero-friends-mixed.jpg";
 import EventCard from "@/components/EventCard";
 import EventDetailDialog from "@/components/EventDetailDialog";
 import { Sparkles, RefreshCw } from "lucide-react";

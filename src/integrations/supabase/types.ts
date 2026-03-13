@@ -122,26 +122,60 @@ export type Database = {
           },
         ]
       }
+      squad_folders: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       squad_members: {
         Row: {
+          archived_at: string | null
+          folder_id: string | null
           id: string
           joined_at: string
           squad_id: string
           user_id: string
         }
         Insert: {
+          archived_at?: string | null
+          folder_id?: string | null
           id?: string
           joined_at?: string
           squad_id: string
           user_id: string
         }
         Update: {
+          archived_at?: string | null
+          folder_id?: string | null
           id?: string
           joined_at?: string
           squad_id?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "squad_members_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "squad_folders"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "squad_members_squad_id_fkey"
             columns: ["squad_id"]

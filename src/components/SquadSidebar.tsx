@@ -67,6 +67,7 @@ interface Squad {
   id: string;
   name: string;
   invite_code: string;
+  created_by: string | null;
   member_count: number;
   folder_id: string | null;
   archived_at: string | null;
@@ -86,6 +87,7 @@ interface SquadSidebarProps {
   onSignOut: () => void;
   userName?: string;
   userEmoji?: string;
+  userId?: string;
   myPlansCount?: number;
   onCreateFolder: (name: string) => Promise<void>;
   onRenameFolder: (folderId: string, name: string) => Promise<void>;
@@ -108,6 +110,7 @@ const SquadSidebar = ({
   onSignOut,
   userName,
   userEmoji,
+  userId,
   myPlansCount = 0,
   onCreateFolder,
   onRenameFolder,
@@ -276,15 +279,17 @@ const SquadSidebar = ({
                     </DropdownMenuSub>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => {
-                      setRenameSquad(squad);
-                      setRenameSquadName(squad.name);
-                    }}
-                  >
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Rename Squad
-                  </DropdownMenuItem>
+                  {squad.created_by === userId && (
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setRenameSquad(squad);
+                        setRenameSquadName(squad.name);
+                      }}
+                    >
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Rename Squad
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   {squad.member_count <= 1 ? (
                     <DropdownMenuItem

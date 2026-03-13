@@ -50,7 +50,7 @@ const HeroTitle = ({ isMyPlansView, activeSquad, onRename, userId, toast }: Hero
   const [editName, setEditName] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const canEdit = !!activeSquad && !isMyPlansView;
+  const canEdit = !!activeSquad && !isMyPlansView && activeSquad.created_by === userId;
 
   const startEdit = () => {
     if (!canEdit) return;
@@ -344,6 +344,7 @@ const DashboardContent = () => {
         onSignOut={signOut}
         userName={currentProfile?.display_name}
         userEmoji={currentProfile?.emoji}
+        userId={user?.id}
         myPlansCount={myRsvpEvents.length}
         onCreateFolder={createFolder}
         onRenameFolder={renameFolder}

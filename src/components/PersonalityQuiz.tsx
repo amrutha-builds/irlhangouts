@@ -8,8 +8,8 @@ const QUESTIONS = [
   {
     question: "It's Saturday night — what's your vibe?",
     options: [
-      { label: "🍷 Wine bar with deep convos", types: ["The Mom Friend", "The Cultured One"] },
-      { label: "💃 Dancing till 2am", types: ["The Wild Card", "The Hype Queen"] },
+      { label: "🍷 Chill bar with deep convos", types: ["The Mom Friend", "The Cultured One"] },
+      { label: "💃 Dancing till 2am", types: ["The Wild Card", "The Hype Person"] },
       { label: "🎨 Gallery opening or live show", types: ["The Cultured One", "The Planner"] },
       { label: "🏕️ Already left town for a road trip", types: ["The Wild Card", "The Adventure Seeker"] },
     ],

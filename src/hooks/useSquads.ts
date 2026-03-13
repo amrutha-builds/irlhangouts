@@ -189,6 +189,18 @@ export const useSquads = (userId: string | undefined) => {
     await loadSquads();
   }, [userId, loadSquads]);
 
+  const createSquad = useCallback(async (name: string, inviteCode: string) => {
+    if (!userId) return;
+    const { data: squad, error } = await supabase
+      .from("squads")
+      .insert({ name, invite_code: inviteCode, created_by: userId })
+      .select("id")
+      .single();
+    if (error || !squad) return;
+    await supabase.from("squad_members").insert({ squad_id: squad.id, user_id: userId });
+    await loadSquads();
+  }, [userId, loadSquads]);
+
   useEffect(() => {
     loadSquads();
   }, [loadSquads]);
@@ -208,5 +220,6 @@ export const useSquads = (userId: string | undefined) => {
     moveToFolder,
     exitSquad,
     rejoinSquad,
+    createSquad,
   };
 };

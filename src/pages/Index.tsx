@@ -25,6 +25,8 @@ interface DbEvent {
   emoji: string;
   source_url: string | null;
   description: string | null;
+  created_by: string | null;
+  squad_id: string | null;
 }
 
 interface Profile {

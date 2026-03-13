@@ -210,11 +210,14 @@ export const useSquads = (userId: string | undefined) => {
 
   const renameSquad = useCallback(async (squadId: string, newName: string) => {
     if (!userId || !newName.trim()) return;
-    await supabase
+    const { error } = await supabase
       .from("squads")
       .update({ name: newName.trim() })
-      .eq("id", squadId)
-      .eq("created_by", userId);
+      .eq("id", squadId);
+    if (error) {
+      console.error("Rename squad error:", error);
+      return;
+    }
     await loadSquads();
   }, [userId, loadSquads]);
 

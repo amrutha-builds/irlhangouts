@@ -48,7 +48,8 @@ const AddEventDialog = ({ onEventAdded, squadId }: AddEventDialogProps) => {
       category,
       emoji: selectedEmoji,
       created_by: user.id,
-    });
+      squad_id: squadId || null,
+    } as any);
 
     if (error) {
       toast({ title: "Error", description: "Failed to add event", variant: "destructive" });

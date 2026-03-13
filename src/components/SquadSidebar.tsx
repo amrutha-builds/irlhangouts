@@ -119,6 +119,7 @@ const SquadSidebar = ({
   onJoinSquad,
 }: SquadSidebarProps) => {
   const { state } = useSidebar();
+  const { toast } = useToast();
   const collapsed = state === "collapsed";
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showNewFolder, setShowNewFolder] = useState(false);

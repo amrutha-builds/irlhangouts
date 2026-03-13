@@ -156,7 +156,9 @@ const DashboardContent = () => {
     toast({ title: "🔍 Finding events...", description: "Scraping SF Bay Area event sources. This may take a minute." });
 
     try {
-      const { data, error } = await supabase.functions.invoke("scrape-events");
+      const { data, error } = await supabase.functions.invoke("scrape-events", {
+        body: { location: userLocation || "San Jose, CA" },
+      });
       if (error) throw error;
       if (data?.success) {
         toast({ title: "✨ Events updated!", description: `Found ${data.eventsFound} events from ${data.sources} sources.` });

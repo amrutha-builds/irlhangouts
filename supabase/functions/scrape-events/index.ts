@@ -64,6 +64,7 @@ Deno.serve(async (req) => {
     const SCRAPE_URLS = [
       `https://www.eventbrite.com/d/${locationSlug}/events--this-weekend/?distance=50mi`,
       `https://www.eventbrite.com/d/${locationSlug}/events--next-week/?distance=50mi`,
+      `https://www.sulekha.com/${locationSlug}/events`,
     ];
 
     const SEARCH_QUERIES = [
@@ -75,7 +76,7 @@ Deno.serve(async (req) => {
     console.log(`Scraping events near ${userLocation}...`);
     const scrapeResults: string[] = [];
 
-    // Scrape Eventbrite listing pages
+    // Scrape Eventbrite and Sulekha listing pages
     for (const url of SCRAPE_URLS) {
       try {
         console.log(`Scraping: ${url}`);

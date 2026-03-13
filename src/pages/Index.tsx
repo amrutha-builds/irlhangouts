@@ -308,16 +308,12 @@ const DashboardContent = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7 }}
             >
-              <div className="mb-3 flex items-center justify-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary-foreground" />
-                <span className="text-sm font-medium tracking-widest uppercase text-primary-foreground/80" style={{ fontFamily: "var(--font-body)" }}>
-                  {isMyPlansView ? "My Plans" : (squads.find((s) => s.id === activeView)?.name || "Squad Events")}
-                </span>
-                <Sparkles className="h-5 w-5 text-primary-foreground" />
-              </div>
               <h1 className="text-4xl font-bold tracking-tight text-primary-foreground md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-                IRL Hangouts
+                {isMyPlansView ? "My Plans" : (squads.find((s) => s.id === activeView)?.name || "Squad Events")}
               </h1>
+              <p className="mt-2 text-sm font-medium tracking-widest uppercase text-primary-foreground/50" style={{ fontFamily: "var(--font-body)" }}>
+                IRL Hangouts
+              </p>
             </motion.div>
           </div>
         </div>

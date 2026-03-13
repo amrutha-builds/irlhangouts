@@ -398,6 +398,22 @@ const SquadSidebar = ({
                     )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+
+                {/* Join Squad button */}
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => {
+                      setJoinCode("");
+                      setShowJoinSquad(true);
+                    }}
+                    tooltip="Join a squad"
+                  >
+                    <UserPlus className="h-4 w-4 text-muted-foreground" />
+                    {!collapsed && (
+                      <span className="text-sm font-medium text-muted-foreground">Join Squad</span>
+                    )}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

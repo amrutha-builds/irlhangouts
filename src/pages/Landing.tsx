@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Search, Loader2, ArrowRight, Plus, Users, LogIn, X } from "lucide-react";
+import { MapPin, Search, Loader2, ArrowRight, Plus, Users, LogIn, X, LayoutDashboard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,7 +18,7 @@ interface LandingEvent {
 }
 
 const Landing = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [city, setCity] = useState("");
   const [submittedCity, setSubmittedCity] = useState("");
@@ -28,21 +28,46 @@ const Landing = () => {
   const [selectedEvent, setSelectedEvent] = useState<LandingEvent | null>(null);
   const [showActionModal, setShowActionModal] = useState(false);
 
+  // Returning user state
+  const [userProfile, setUserProfile] = useState<{ display_name: string; emoji: string; location: string | null } | null>(null);
+
   // Squad creation state
   const [squadName, setSquadName] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [codeError, setCodeError] = useState("");
 
+  const isLoggedIn = !!user;
+
+  // For logged-in users: load profile and auto-populate location
   useEffect(() => {
-    if (user) {
-      navigate("/dashboard", { replace: true });
-    }
+    if (!user) { setUserProfile(null); return; }
+    supabase
+      .from("profiles")
+      .select("display_name, emoji, location")
+      .eq("id", user.id)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setUserProfile(data);
+          if (data.location) {
+            setCity(data.location);
+            setSubmittedCity(data.location);
+          }
+        }
+      });
   }, [user]);
 
-  // Load existing public events on mount
+  // Auto-load events for logged-in users with a saved location
   useEffect(() => {
-    loadExistingEvents();
-  }, []);
+    if (userProfile?.location && events.length === 0 && !hasSearched) {
+      loadEventsForCity(userProfile.location);
+    }
+  }, [userProfile]);
+
+  // Load existing public events on mount for anonymous users
+  useEffect(() => {
+    if (!user) loadExistingEvents();
+  }, [user]);
 
   const loadExistingEvents = async () => {
     const { data } = await supabase
@@ -57,25 +82,20 @@ const Landing = () => {
     }
   };
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!city.trim()) return;
+  const loadEventsForCity = async (location: string) => {
     setLoading(true);
-    setSubmittedCity(city.trim());
+    setSubmittedCity(location);
     setHasSearched(true);
-
     try {
       await supabase.functions.invoke("scrape-events", {
-        body: { location: city.trim() },
+        body: { location },
       });
-
       const { data } = await supabase
         .from("events")
         .select("*")
         .is("squad_id", null)
         .order("created_at", { ascending: false })
         .limit(30);
-
       if (data) setEvents(data);
     } catch (err) {
       console.error("Failed to fetch events:", err);
@@ -84,7 +104,18 @@ const Landing = () => {
     }
   };
 
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!city.trim()) return;
+    await loadEventsForCity(city.trim());
+  };
+
   const handleEventClick = (event: LandingEvent) => {
+    if (isLoggedIn) {
+      // Logged-in users go straight to dashboard
+      navigate("/dashboard");
+      return;
+    }
     setSelectedEvent(event);
     setShowActionModal(true);
     setCodeError("");
@@ -108,12 +139,38 @@ const Landing = () => {
     navigate("/auth");
   };
 
-  if (user) return null;
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
       <div className="relative overflow-hidden bg-primary px-4 pb-12 pt-16 text-center">
+        {/* Top bar for logged-in users */}
+        {isLoggedIn && userProfile && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute right-4 top-4 flex items-center gap-3"
+          >
+            <span className="text-sm text-primary-foreground/80">
+              {userProfile.emoji} {userProfile.display_name}
+            </span>
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="flex items-center gap-1.5 rounded-lg bg-primary-foreground/15 px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary-foreground/25 transition-colors"
+            >
+              <LayoutDashboard className="h-3.5 w-3.5" />
+              Dashboard
+            </button>
+          </motion.div>
+        )}
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -123,10 +180,12 @@ const Landing = () => {
             className="mb-2 text-4xl font-bold tracking-tight text-primary-foreground md:text-5xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            Let's Hang IRL
+            {isLoggedIn ? `Hey ${userProfile?.display_name?.split(" ")[0] || "there"} 👋` : "Let's Hang IRL"}
           </h1>
           <p className="mb-8 text-sm text-primary-foreground/70">
-            Discover events near you and plan hangouts with your squad ✨
+            {isLoggedIn
+              ? "Here's what's happening near you this weekend"
+              : "Discover events near you and plan hangouts with your squad ✨"}
           </p>
 
           <form onSubmit={handleSearch} className="flex gap-2">
@@ -172,7 +231,8 @@ const Landing = () => {
         {!loading && events.length > 0 && (
           <>
             <p className="mb-6 text-sm text-muted-foreground">
-              {submittedCity ? `Events near ${submittedCity}` : "Upcoming events"} — tap any event to get started
+              {submittedCity ? `Events near ${submittedCity}` : "Upcoming events"}
+              {isLoggedIn ? " — tap to RSVP from your dashboard" : " — tap any event to get started"}
             </p>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {events.map((event, i) => (
@@ -203,9 +263,9 @@ const Landing = () => {
         )}
       </div>
 
-      {/* Action Modal */}
+      {/* Action Modal — only for anonymous users */}
       <AnimatePresence>
-        {showActionModal && (
+        {showActionModal && !isLoggedIn && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

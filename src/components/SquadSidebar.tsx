@@ -149,6 +149,23 @@ const SquadSidebar = ({
     setRenameFolderName("");
   };
 
+  const generateCode = (name: string) => {
+    const base = name.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
+    const suffix = Math.floor(1000 + Math.random() * 9000);
+    return base ? `${base}${suffix}` : "";
+  };
+
+  const handleCreateSquad = async () => {
+    if (!newSquadName.trim()) return;
+    setCreatingSquad(true);
+    const code = newSquadCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, "") || generateCode(newSquadName);
+    await onCreateSquad(newSquadName.trim(), code);
+    setNewSquadName("");
+    setNewSquadCode("");
+    setCreatingSquad(false);
+    setShowNewSquad(false);
+  };
+
   // Squads not in any folder
   const unfolderedSquads = squads.filter((s) => !s.folder_id);
   // Squads grouped by folder

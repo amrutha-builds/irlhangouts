@@ -236,13 +236,23 @@ const SquadSidebar = ({
                     </DropdownMenuSub>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => setExitConfirm(squad)}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <DoorOpen className="mr-2 h-4 w-4" />
-                    Exit & Archive
-                  </DropdownMenuItem>
+                  {squad.member_count <= 1 ? (
+                    <DropdownMenuItem
+                      onClick={() => setDeleteConfirm(squad)}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Squad
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem
+                      onClick={() => setExitConfirm(squad)}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <DoorOpen className="mr-2 h-4 w-4" />
+                      Exit & Archive
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

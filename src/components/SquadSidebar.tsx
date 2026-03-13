@@ -13,6 +13,7 @@ import {
   Trash2,
   RotateCcw,
   Pencil,
+  Plus,
 } from "lucide-react";
 import { useState } from "react";
 import {
@@ -90,6 +91,7 @@ interface SquadSidebarProps {
   onMoveToFolder: (squadId: string, folderId: string | null) => Promise<void>;
   onExitSquad: (squadId: string) => Promise<void>;
   onRejoinSquad: (squadId: string) => Promise<void>;
+  onCreateSquad: (name: string, inviteCode: string) => Promise<void>;
 }
 
 const SquadSidebar = ({
@@ -108,6 +110,7 @@ const SquadSidebar = ({
   onMoveToFolder,
   onExitSquad,
   onRejoinSquad,
+  onCreateSquad,
 }: SquadSidebarProps) => {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
@@ -118,6 +121,11 @@ const SquadSidebar = ({
   const [renameFolderName, setRenameFolderName] = useState("");
   const [exitConfirm, setExitConfirm] = useState<Squad | null>(null);
   const [showArchive, setShowArchive] = useState(false);
+  const [showNewSquad, setShowNewSquad] = useState(false);
+  const [newSquadName, setNewSquadName] = useState("");
+  const [newSquadCode, setNewSquadCode] = useState("");
+  const [creatingSquad, setCreatingSquad] = useState(false);
+  const [newSquadCopied, setNewSquadCopied] = useState(false);
 
   const handleCopy = (e: React.MouseEvent, squad: Squad) => {
     e.stopPropagation();
@@ -139,6 +147,23 @@ const SquadSidebar = ({
     await onRenameFolder(renamingFolder.id, renameFolderName.trim());
     setRenamingFolder(null);
     setRenameFolderName("");
+  };
+
+  const generateCode = (name: string) => {
+    const base = name.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
+    const suffix = Math.floor(1000 + Math.random() * 9000);
+    return base ? `${base}${suffix}` : "";
+  };
+
+  const handleCreateSquad = async () => {
+    if (!newSquadName.trim()) return;
+    setCreatingSquad(true);
+    const code = newSquadCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, "") || generateCode(newSquadName);
+    await onCreateSquad(newSquadName.trim(), code);
+    setNewSquadName("");
+    setNewSquadCode("");
+    setCreatingSquad(false);
+    setShowNewSquad(false);
   };
 
   // Squads not in any folder
@@ -338,6 +363,23 @@ const SquadSidebar = ({
 
                 {/* Unfoldered squads */}
                 {unfolderedSquads.map(renderSquadItem)}
+
+                {/* New Squad button */}
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => {
+                      setNewSquadName("");
+                      setNewSquadCode("");
+                      setShowNewSquad(true);
+                    }}
+                    tooltip="Create new squad"
+                  >
+                    <Plus className="h-4 w-4 text-primary" />
+                    {!collapsed && (
+                      <span className="text-sm font-medium text-primary">New Squad</span>
+                    )}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -484,6 +526,46 @@ const SquadSidebar = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* New squad dialog */}
+      <Dialog open={showNewSquad} onOpenChange={setShowNewSquad}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Create a New Squad</DialogTitle>
+            <DialogDescription>Start a new crew and invite your friends.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <input
+              type="text"
+              placeholder="Squad name (e.g. Weekend Warriors)"
+              value={newSquadName}
+              onChange={(e) => {
+                setNewSquadName(e.target.value);
+                setNewSquadCode(generateCode(e.target.value));
+              }}
+              autoFocus
+              className="w-full rounded-xl border border-input bg-card px-4 py-2.5 text-sm text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <div>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">Invite Code</label>
+              <input
+                type="text"
+                placeholder="Auto-generated"
+                value={newSquadCode}
+                onChange={(e) => setNewSquadCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+                className="w-full rounded-xl border border-input bg-card px-4 py-2.5 text-sm font-mono text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            <button
+              onClick={handleCreateSquad}
+              disabled={!newSquadName.trim() || creatingSquad}
+              className="w-full rounded-xl bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              {creatingSquad ? "Creating..." : "Create Squad"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

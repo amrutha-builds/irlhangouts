@@ -17,7 +17,7 @@ const Landing = () => {
 
   useEffect(() => {
     const name = squadName.trim();
-    if (!name) { setInviteCode(""); return; }
+    if (!name) {setInviteCode("");return;}
     const base = name.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
     const suffix = Math.floor(1000 + Math.random() * 9000);
     setInviteCode(base ? `${base}${suffix}` : "");
@@ -31,8 +31,8 @@ const Landing = () => {
   const handleCreateSquad = (e: React.FormEvent) => {
     e.preventDefault();
     const code = inviteCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-    if (code.length < 4) { setCodeError("Code must be at least 4 characters"); return; }
-    if (code.length > 20) { setCodeError("Code must be 20 characters or less"); return; }
+    if (code.length < 4) {setCodeError("Code must be at least 4 characters");return;}
+    if (code.length > 20) {setCodeError("Code must be 20 characters or less");return;}
     if (!squadName.trim()) return;
     sessionStorage.setItem("pending_squad", JSON.stringify({ name: squadName.trim(), invite_code: code }));
     setInviteCode(code);
@@ -42,7 +42,7 @@ const Landing = () => {
   const handleJoinSquad = (e: React.FormEvent) => {
     e.preventDefault();
     const code = joinCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-    if (code.length < 4) { setCodeError("Code must be at least 4 characters"); return; }
+    if (code.length < 4) {setCodeError("Code must be at least 4 characters");return;}
     sessionStorage.setItem("join_squad_code", code);
     navigate("/auth");
   };
@@ -82,8 +82,8 @@ const Landing = () => {
             Sign Up to Continue <ArrowRight className="h-4 w-4" />
           </button>
         </motion.div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -107,7 +107,7 @@ const Landing = () => {
             Let's Hang IRL
           </h1>
           <p className="max-w-xs text-sm text-muted-foreground">
-            Create a squad, discover events together, and never miss a hangout ✨
+            ✨ Discover events together, and never miss a hangout ✨
           </p>
         </div>
 
@@ -117,13 +117,13 @@ const Landing = () => {
           {/* Option 1: Create a Squad */}
           <motion.div layout className="w-full">
             <button
-              onClick={() => { setActivePanel(activePanel === "create" ? "none" : "create"); setCodeError(""); }}
+              onClick={() => {setActivePanel(activePanel === "create" ? "none" : "create");setCodeError("");}}
               className={`flex w-full items-center gap-4 rounded-2xl border p-5 text-left transition-all ${
-                activePanel === "create"
-                  ? "border-primary bg-primary/5 shadow-md"
-                  : "border-border bg-card hover:border-primary/40 hover:shadow-sm"
-              }`}
-            >
+              activePanel === "create" ?
+              "border-primary bg-primary/5 shadow-md" :
+              "border-border bg-card hover:border-primary/40 hover:shadow-sm"}`
+              }>
+              
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
                 <Plus className="h-6 w-6 text-primary" />
               </div>
@@ -134,50 +134,50 @@ const Landing = () => {
               <ArrowRight className={`h-4 w-4 text-muted-foreground transition-transform ${activePanel === "create" ? "rotate-90" : ""}`} />
             </button>
 
-            {activePanel === "create" && (
-              <motion.form
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                onSubmit={handleCreateSquad}
-                className="mt-2 space-y-3 rounded-2xl border border-border bg-card p-5"
-              >
+            {activePanel === "create" &&
+            <motion.form
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              onSubmit={handleCreateSquad}
+              className="mt-2 space-y-3 rounded-2xl border border-border bg-card p-5">
+              
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-foreground">Squad Name</label>
                   <input
-                    type="text" value={squadName} onChange={(e) => setSquadName(e.target.value)}
-                    placeholder="e.g. Weekend Warriors" maxLength={50} required autoFocus
-                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
+                  type="text" value={squadName} onChange={(e) => setSquadName(e.target.value)}
+                  placeholder="e.g. Weekend Warriors" maxLength={50} required autoFocus
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-foreground">Invite Code</label>
                   <input
-                    type="text" value={inviteCode}
-                    onChange={(e) => { setInviteCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")); setCodeError(""); }}
-                    maxLength={20} required
-                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-center text-lg font-medium tracking-widest uppercase text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="Auto-generated"
-                  />
+                  type="text" value={inviteCode}
+                  onChange={(e) => {setInviteCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));setCodeError("");}}
+                  maxLength={20} required
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-center text-lg font-medium tracking-widest uppercase text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  placeholder="Auto-generated" />
+                
                   {codeError && <p className="mt-1 text-sm text-destructive">{codeError}</p>}
                 </div>
                 <button type="submit" className="w-full rounded-xl bg-primary py-3 font-medium text-primary-foreground hover:bg-primary/90">
                   Create Squad ✨
                 </button>
               </motion.form>
-            )}
+            }
           </motion.div>
 
           {/* Option 2: Join a Squad */}
           <motion.div layout className="w-full">
             <button
-              onClick={() => { setActivePanel(activePanel === "join" ? "none" : "join"); setCodeError(""); }}
+              onClick={() => {setActivePanel(activePanel === "join" ? "none" : "join");setCodeError("");}}
               className={`flex w-full items-center gap-4 rounded-2xl border p-5 text-left transition-all ${
-                activePanel === "join"
-                  ? "border-primary bg-primary/5 shadow-md"
-                  : "border-border bg-card hover:border-primary/40 hover:shadow-sm"
-              }`}
-            >
+              activePanel === "join" ?
+              "border-primary bg-primary/5 shadow-md" :
+              "border-border bg-card hover:border-primary/40 hover:shadow-sm"}`
+              }>
+              
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent/40">
                 <Users className="h-6 w-6 text-accent-foreground" />
               </div>
@@ -188,30 +188,30 @@ const Landing = () => {
               <ArrowRight className={`h-4 w-4 text-muted-foreground transition-transform ${activePanel === "join" ? "rotate-90" : ""}`} />
             </button>
 
-            {activePanel === "join" && (
-              <motion.form
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                onSubmit={handleJoinSquad}
-                className="mt-2 space-y-3 rounded-2xl border border-border bg-card p-5"
-              >
+            {activePanel === "join" &&
+            <motion.form
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              onSubmit={handleJoinSquad}
+              className="mt-2 space-y-3 rounded-2xl border border-border bg-card p-5">
+              
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-foreground">Invite Code</label>
                   <input
-                    type="text" value={joinCode}
-                    onChange={(e) => { setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")); setCodeError(""); }}
-                    maxLength={20} required autoFocus
-                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-center text-lg font-medium tracking-widest uppercase text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="Enter code"
-                  />
+                  type="text" value={joinCode}
+                  onChange={(e) => {setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));setCodeError("");}}
+                  maxLength={20} required autoFocus
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-center text-lg font-medium tracking-widest uppercase text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  placeholder="Enter code" />
+                
                   {codeError && <p className="mt-1 text-sm text-destructive">{codeError}</p>}
                 </div>
                 <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-medium text-primary-foreground hover:bg-primary/90">
                   Join Squad <ArrowRight className="h-4 w-4" />
                 </button>
               </motion.form>
-            )}
+            }
           </motion.div>
 
           {/* Divider */}
@@ -224,8 +224,8 @@ const Landing = () => {
           {/* Option 3: Sign In */}
           <button
             onClick={() => navigate("/auth")}
-            className="flex w-full items-center gap-4 rounded-2xl border border-border bg-card p-5 text-left transition-all hover:border-primary/40 hover:shadow-sm"
-          >
+            className="flex w-full items-center gap-4 rounded-2xl border border-border bg-card p-5 text-left transition-all hover:border-primary/40 hover:shadow-sm">
+            
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-secondary">
               <LogIn className="h-6 w-6 text-secondary-foreground" />
             </div>
@@ -237,8 +237,8 @@ const Landing = () => {
           </button>
         </div>
       </motion.div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default Landing;

@@ -181,6 +181,10 @@ const SquadSidebar = ({
     setJoiningSquad(true);
     const result = await onJoinSquad(joinCode.trim());
     setJoiningSquad(false);
+    toast({
+      title: result.message,
+      variant: result.success ? "default" : "destructive",
+    });
     if (result.success) {
       setJoinCode("");
       setShowJoinSquad(false);

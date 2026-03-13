@@ -56,7 +56,7 @@ const RESULTS: Record<string, { emoji: string; tagline: string; color: string }>
   "The Mom Friend": { emoji: "🫶", tagline: "Heart of the crew", color: "hsl(var(--accent))" },
   "The Wild Card": { emoji: "⚡", tagline: "Never a dull moment", color: "hsl(var(--primary))" },
   "The Planner": { emoji: "📋", tagline: "Always 3 steps ahead", color: "hsl(var(--secondary))" },
-  "The Hype Queen": { emoji: "👑", tagline: "Chief vibes officer", color: "hsl(var(--primary))" },
+  "The Hype Person": { emoji: "👑", tagline: "Chief vibes officer", color: "hsl(var(--primary))" },
   "The Cultured One": { emoji: "🎭", tagline: "Taste level: immaculate", color: "hsl(var(--accent))" },
   "The Adventure Seeker": { emoji: "🌍", tagline: "Down for anything", color: "hsl(var(--primary))" },
 };

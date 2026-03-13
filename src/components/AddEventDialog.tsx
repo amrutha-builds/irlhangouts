@@ -21,6 +21,7 @@ const CATEGORIES = [
 
 interface AddEventDialogProps {
   onEventAdded: () => void;
+  squadId?: string | null;
 }
 
 const AddEventDialog = ({ onEventAdded }: AddEventDialogProps) => {

@@ -105,8 +105,13 @@ const DashboardContent = () => {
       ? supabase.from("rsvps").select("*").eq("user_id", user.id).eq("going", true)
       : null;
 
+    // Filter events by active squad
+    const eventsQuery = effectiveSquadId
+      ? supabase.from("events").select("*").eq("squad_id", effectiveSquadId).order("created_at", { ascending: false })
+      : supabase.from("events").select("*").order("created_at", { ascending: false });
+
     const [eventsRes, profilesRes, rsvpsRes, myRsvpsRes] = await Promise.all([
-      supabase.from("events").select("*").order("created_at", { ascending: false }),
+      eventsQuery,
       supabase.from("profiles").select("*"),
       rsvpQuery,
       myRsvpQuery ?? Promise.resolve({ data: [] }),

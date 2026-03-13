@@ -185,18 +185,9 @@ const DashboardContent = () => {
     }
   };
 
-  const isWeekend = (dateStr: string) => {
-    const parsed = new Date(dateStr);
-    if (isNaN(parsed.getTime())) return false;
-    const day = parsed.getDay();
-    return day === 0 || day === 5 || day === 6;
-  };
-
   // Filter profiles to only squad members
   const squadProfiles = profiles.filter((p) => squadMemberIds.includes(p.id));
   const currentProfile = profiles.find((p) => p.id === user?.id);
-
-  const filteredEvents = weekendOnly ? events.filter((e) => isWeekend(e.date)) : events;
 
   // Build events with only squad member friends
   const eventsWithFriends = filteredEvents

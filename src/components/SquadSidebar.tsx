@@ -110,6 +110,7 @@ const SquadSidebar = ({
   onMoveToFolder,
   onExitSquad,
   onRejoinSquad,
+  onCreateSquad,
 }: SquadSidebarProps) => {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
@@ -120,6 +121,11 @@ const SquadSidebar = ({
   const [renameFolderName, setRenameFolderName] = useState("");
   const [exitConfirm, setExitConfirm] = useState<Squad | null>(null);
   const [showArchive, setShowArchive] = useState(false);
+  const [showNewSquad, setShowNewSquad] = useState(false);
+  const [newSquadName, setNewSquadName] = useState("");
+  const [newSquadCode, setNewSquadCode] = useState("");
+  const [creatingSquad, setCreatingSquad] = useState(false);
+  const [newSquadCopied, setNewSquadCopied] = useState(false);
 
   const handleCopy = (e: React.MouseEvent, squad: Squad) => {
     e.stopPropagation();

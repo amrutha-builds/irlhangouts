@@ -92,6 +92,7 @@ interface SquadSidebarProps {
   onExitSquad: (squadId: string) => Promise<void>;
   onRejoinSquad: (squadId: string) => Promise<void>;
   onCreateSquad: (name: string, inviteCode: string) => Promise<void>;
+  onDeleteSquad: (squadId: string) => Promise<void>;
 }
 
 const SquadSidebar = ({
@@ -111,6 +112,7 @@ const SquadSidebar = ({
   onExitSquad,
   onRejoinSquad,
   onCreateSquad,
+  onDeleteSquad,
 }: SquadSidebarProps) => {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
@@ -120,6 +122,7 @@ const SquadSidebar = ({
   const [renamingFolder, setRenamingFolder] = useState<SquadFolder | null>(null);
   const [renameFolderName, setRenameFolderName] = useState("");
   const [exitConfirm, setExitConfirm] = useState<Squad | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<Squad | null>(null);
   const [showArchive, setShowArchive] = useState(false);
   const [showNewSquad, setShowNewSquad] = useState(false);
   const [newSquadName, setNewSquadName] = useState("");
@@ -233,13 +236,23 @@ const SquadSidebar = ({
                     </DropdownMenuSub>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => setExitConfirm(squad)}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <DoorOpen className="mr-2 h-4 w-4" />
-                    Exit & Archive
-                  </DropdownMenuItem>
+                  {squad.member_count <= 1 ? (
+                    <DropdownMenuItem
+                      onClick={() => setDeleteConfirm(squad)}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Squad
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem
+                      onClick={() => setExitConfirm(squad)}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <DoorOpen className="mr-2 h-4 w-4" />
+                      Exit & Archive
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -522,6 +535,30 @@ const SquadSidebar = ({
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Exit Squad
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete squad confirmation */}
+      <AlertDialog open={!!deleteConfirm} onOpenChange={(o) => !o && setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete "{deleteConfirm?.name}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the squad. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteConfirm) onDeleteSquad(deleteConfirm.id);
+                setDeleteConfirm(null);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Squad
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

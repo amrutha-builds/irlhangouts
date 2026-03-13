@@ -201,6 +201,14 @@ export const useSquads = (userId: string | undefined) => {
     await loadSquads();
   }, [userId, loadSquads]);
 
+  const deleteSquad = useCallback(async (squadId: string) => {
+    if (!userId) return;
+    // Delete membership first, then the squad itself
+    await supabase.from("squad_members").delete().eq("squad_id", squadId);
+    await supabase.from("squads").delete().eq("id", squadId);
+    await loadSquads();
+  }, [userId, loadSquads]);
+
   useEffect(() => {
     loadSquads();
   }, [loadSquads]);
@@ -221,5 +229,6 @@ export const useSquads = (userId: string | undefined) => {
     exitSquad,
     rejoinSquad,
     createSquad,
+    deleteSquad,
   };
 };

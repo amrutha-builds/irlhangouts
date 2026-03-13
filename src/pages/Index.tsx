@@ -41,7 +41,7 @@ const DashboardContent = () => {
   useSquadSetup(user?.id);
   const {
     squads, archivedSquads, folders, activeSquadId, setActiveSquadId, squadMemberIds,
-    reload: reloadSquads, createFolder, renameFolder, deleteFolder, moveToFolder, exitSquad, rejoinSquad, createSquad,
+    reload: reloadSquads, createFolder, renameFolder, deleteFolder, moveToFolder, exitSquad, rejoinSquad, createSquad, deleteSquad,
   } = useSquads(user?.id);
   const [activeView, setActiveView] = useState<string | null>(null);
   const [events, setEvents] = useState<DbEvent[]>([]);
@@ -279,6 +279,7 @@ const DashboardContent = () => {
         onExitSquad={exitSquad}
         onRejoinSquad={rejoinSquad}
         onCreateSquad={createSquad}
+        onDeleteSquad={deleteSquad}
       />
 
       <div className="flex-1 flex flex-col min-w-0">

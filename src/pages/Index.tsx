@@ -241,6 +241,21 @@ const DashboardContent = () => {
           onComplete={(loc) => {
             setUserLocation(loc);
             setShowLocationOnboarding(false);
+            // Check if they also need the quiz
+            const profile = profiles.find((p) => p.id === user.id);
+            if (!profile?.personality_type) {
+              setShowOnboardingQuiz(true);
+            }
+          }}
+        />
+      )}
+      {user && (
+        <OnboardingQuiz
+          open={showOnboardingQuiz}
+          onComplete={async (type) => {
+            await supabase.from("profiles").update({ personality_type: type }).eq("id", user.id);
+            setProfiles((prev) => prev.map((p) => p.id === user.id ? { ...p, personality_type: type } : p));
+            setShowOnboardingQuiz(false);
           }}
         />
       )}

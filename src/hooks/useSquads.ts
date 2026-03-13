@@ -7,10 +7,19 @@ interface Squad {
   invite_code: string;
   created_by: string | null;
   member_count: number;
+  folder_id: string | null;
+  archived_at: string | null;
+}
+
+interface SquadFolder {
+  id: string;
+  name: string;
 }
 
 export const useSquads = (userId: string | undefined) => {
   const [squads, setSquads] = useState<Squad[]>([]);
+  const [archivedSquads, setArchivedSquads] = useState<Squad[]>([]);
+  const [folders, setFolders] = useState<SquadFolder[]>([]);
   const [activeSquadId, setActiveSquadId] = useState<string | null>(null);
   const [squadMemberIds, setSquadMemberIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,53 +28,86 @@ export const useSquads = (userId: string | undefined) => {
     if (!userId) return;
     setLoading(true);
 
-    // Get squads user belongs to
+    // Get all memberships including archived
     const { data: memberships } = await supabase
       .from("squad_members")
-      .select("squad_id")
+      .select("squad_id, folder_id, archived_at")
       .eq("user_id", userId);
 
     if (!memberships || memberships.length === 0) {
       setSquads([]);
+      setArchivedSquads([]);
       setLoading(false);
       return;
     }
 
-    const squadIds = memberships.map((m) => m.squad_id);
+    const allSquadIds = memberships.map((m) => m.squad_id);
+    const activeMemberships = memberships.filter((m) => !(m as any).archived_at);
+    const archivedMemberships = memberships.filter((m) => (m as any).archived_at);
 
     // Get squad details
     const { data: squadsData } = await supabase
       .from("squads")
       .select("*")
-      .in("id", squadIds);
+      .in("id", allSquadIds);
 
-    // Get member counts
+    // Get active member counts (exclude archived members)
     const { data: allMembers } = await supabase
       .from("squad_members")
       .select("squad_id, user_id")
-      .in("squad_id", squadIds);
+      .in("squad_id", allSquadIds)
+      .is("archived_at" as any, null);
 
     const countMap: Record<string, number> = {};
     allMembers?.forEach((m) => {
       countMap[m.squad_id] = (countMap[m.squad_id] || 0) + 1;
     });
 
-    const enriched: Squad[] = (squadsData || []).map((s) => ({
+    // Load folders
+    const { data: foldersData } = await supabase
+      .from("squad_folders")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: true });
+
+    setFolders((foldersData as any[])?.map((f) => ({ id: f.id, name: f.name })) || []);
+
+    // Build folder/archived maps from memberships
+    const folderMap: Record<string, string | null> = {};
+    memberships.forEach((m) => {
+      folderMap[m.squad_id] = (m as any).folder_id || null;
+    });
+
+    const enrichAll = (squadsData || []).map((s) => ({
       ...s,
       member_count: countMap[s.id] || 0,
+      folder_id: folderMap[s.id] || null,
+      archived_at: null as string | null,
     }));
 
-    setSquads(enriched);
+    const activeSquadIds = activeMemberships.map((m) => m.squad_id);
+    const archivedSquadIds = archivedMemberships.map((m) => m.squad_id);
 
-    // Auto-select first squad if none active
-    if (!activeSquadId || !squadIds.includes(activeSquadId)) {
-      setActiveSquadId(enriched[0]?.id ?? null);
+    setSquads(enrichAll.filter((s) => activeSquadIds.includes(s.id)));
+    setArchivedSquads(
+      enrichAll
+        .filter((s) => archivedSquadIds.includes(s.id))
+        .map((s) => ({
+          ...s,
+          archived_at: (archivedMemberships.find((m) => m.squad_id === s.id) as any)?.archived_at,
+        }))
+    );
+
+    // Auto-select first active squad if none selected
+    if (!activeSquadId || !activeSquadIds.includes(activeSquadId)) {
+      const firstActive = enrichAll.find((s) => activeSquadIds.includes(s.id));
+      setActiveSquadId(firstActive?.id ?? null);
     }
 
     setLoading(false);
   }, [userId, activeSquadId]);
 
-  // Load members of active squad
+  // Load members of active squad (only non-archived)
   useEffect(() => {
     if (!activeSquadId) {
       setSquadMemberIds([]);
@@ -75,17 +117,88 @@ export const useSquads = (userId: string | undefined) => {
     const loadMembers = async () => {
       const { data } = await supabase
         .from("squad_members")
-        .select("user_id")
+        .select("user_id, archived_at")
         .eq("squad_id", activeSquadId);
-      setSquadMemberIds(data?.map((m) => m.user_id) || []);
+      const activeMembers = (data || []).filter((m) => !(m as any).archived_at);
+      setSquadMemberIds(activeMembers.map((m) => m.user_id));
     };
 
     loadMembers();
   }, [activeSquadId]);
 
+  const createFolder = useCallback(async (name: string) => {
+    if (!userId) return;
+    await supabase.from("squad_folders").insert({ user_id: userId, name } as any);
+    await loadSquads();
+  }, [userId, loadSquads]);
+
+  const renameFolder = useCallback(async (folderId: string, name: string) => {
+    await supabase.from("squad_folders").update({ name } as any).eq("id", folderId);
+    await loadSquads();
+  }, [loadSquads]);
+
+  const deleteFolder = useCallback(async (folderId: string) => {
+    // Move squads out of folder first (set folder_id to null)
+    if (userId) {
+      await supabase
+        .from("squad_members")
+        .update({ folder_id: null } as any)
+        .eq("user_id", userId)
+        .eq("folder_id" as any, folderId);
+    }
+    await supabase.from("squad_folders").delete().eq("id", folderId);
+    await loadSquads();
+  }, [userId, loadSquads]);
+
+  const moveToFolder = useCallback(async (squadId: string, folderId: string | null) => {
+    if (!userId) return;
+    await supabase
+      .from("squad_members")
+      .update({ folder_id: folderId } as any)
+      .eq("user_id", userId)
+      .eq("squad_id", squadId);
+    await loadSquads();
+  }, [userId, loadSquads]);
+
+  const exitSquad = useCallback(async (squadId: string) => {
+    if (!userId) return;
+    // Archive instead of delete - set archived_at
+    await supabase
+      .from("squad_members")
+      .update({ archived_at: new Date().toISOString(), folder_id: null } as any)
+      .eq("user_id", userId)
+      .eq("squad_id", squadId);
+    await loadSquads();
+  }, [userId, loadSquads]);
+
+  const rejoinSquad = useCallback(async (squadId: string) => {
+    if (!userId) return;
+    await supabase
+      .from("squad_members")
+      .update({ archived_at: null } as any)
+      .eq("user_id", userId)
+      .eq("squad_id", squadId);
+    await loadSquads();
+  }, [userId, loadSquads]);
+
   useEffect(() => {
     loadSquads();
   }, [loadSquads]);
 
-  return { squads, activeSquadId, setActiveSquadId, squadMemberIds, loading, reload: loadSquads };
+  return {
+    squads,
+    archivedSquads,
+    folders,
+    activeSquadId,
+    setActiveSquadId,
+    squadMemberIds,
+    loading,
+    reload: loadSquads,
+    createFolder,
+    renameFolder,
+    deleteFolder,
+    moveToFolder,
+    exitSquad,
+    rejoinSquad,
+  };
 };

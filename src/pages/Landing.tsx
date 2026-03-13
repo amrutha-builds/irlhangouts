@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Sparkles, ArrowRight, Copy, Check, Users, Plus, LogIn } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Landing = () => {
@@ -14,19 +14,65 @@ const Landing = () => {
   const [copied, setCopied] = useState(false);
   const [created, setCreated] = useState(false);
   const [activePanel, setActivePanel] = useState<"none" | "create" | "join">("none");
+  const [pendingJoinCode, setPendingJoinCode] = useState<string | null>(null);
+
+  const location = useLocation();
+
+  // If the user lands on the page with an invite code stored in session storage or query params,
+  // prefill the join panel and explain what's happening.
+  useEffect(() => {
+    const joinCodeFromSession = sessionStorage.getItem("join_squad_code");
+    if (joinCodeFromSession) {
+      setJoinCode(joinCodeFromSession);
+      setPendingJoinCode(joinCodeFromSession);
+      setActivePanel("join");
+    }
+
+    const params = new URLSearchParams(location.search);
+    const invite = params.get("invite") || params.get("code");
+    if (invite) {
+      const normalized = invite.toUpperCase().replace(/[^A-Z0-9]/g, "");
+      if (normalized) {
+        sessionStorage.setItem("join_squad_code", normalized);
+        setJoinCode(normalized);
+        setPendingJoinCode(normalized);
+        setActivePanel("join");
+
+        // Remove query param so refresh doesn't repeat the flow
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState(null, "", cleanUrl);
+      }
+    }
+
+    const pendingRaw = sessionStorage.getItem("pending_squad");
+    if (pendingRaw) {
+      try {
+        const pending = JSON.parse(pendingRaw);
+        if (pending?.invite_code) {
+          setSquadName(pending.name || "");
+          setInviteCode(pending.invite_code);
+          setCreated(true);
+        }
+      } catch (e) {
+        // ignore invalid session state
+      }
+    }
+  }, [location.search]);
 
   useEffect(() => {
+    if (created) return;
     const name = squadName.trim();
     if (!name) { setInviteCode(""); return; }
     const base = name.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
     const suffix = Math.floor(1000 + Math.random() * 9000);
     setInviteCode(base ? `${base}${suffix}` : "");
-  }, [squadName]);
+  }, [squadName, created]);
 
-  if (user) {
-    navigate("/dashboard", { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleCreateSquad = (e: React.FormEvent) => {
     e.preventDefault();
@@ -182,8 +228,14 @@ const Landing = () => {
                 <Users className="h-6 w-6 text-accent-foreground" />
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>Join a Squad</p>
-                <p className="text-xs text-muted-foreground">Got an invite code? Enter it here</p>
+                <p className="font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
+                  {pendingJoinCode ? "You're invited!" : "Join a Squad"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {pendingJoinCode
+                    ? "We kept your invite code — just sign in to join your squad."
+                    : "Got an invite code? Enter it here."}
+                </p>
               </div>
               <ArrowRight className={`h-4 w-4 text-muted-foreground transition-transform ${activePanel === "join" ? "rotate-90" : ""}`} />
             </button>
@@ -208,7 +260,7 @@ const Landing = () => {
                   {codeError && <p className="mt-1 text-sm text-destructive">{codeError}</p>}
                 </div>
                 <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-medium text-primary-foreground hover:bg-primary/90">
-                  Join Squad <ArrowRight className="h-4 w-4" />
+                  {pendingJoinCode ? "Sign in to join" : "Join Squad"} <ArrowRight className="h-4 w-4" />
                 </button>
               </motion.form>
             )}

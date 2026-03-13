@@ -196,6 +196,15 @@ const SquadSidebar = ({
     }
   };
 
+  const handleRenameSquad = async () => {
+    if (!renameSquad || !renameSquadName.trim() || !onRenameSquad) return;
+    setRenamingSquad(true);
+    await onRenameSquad(renameSquad.id, renameSquadName.trim());
+    setRenamingSquad(false);
+    setRenameSquad(null);
+    setRenameSquadName("");
+  };
+
   // Squads not in any folder
   const unfolderedSquads = squads.filter((s) => !s.folder_id);
   // Squads grouped by folder

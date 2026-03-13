@@ -40,11 +40,12 @@ interface Profile {
 interface HeroTitleProps {
   isMyPlansView: boolean;
   activeSquad?: { id: string; name: string; created_by?: string | null };
-  onRename: (squadId: string, newName: string) => Promise<void>;
+  onRename: (squadId: string, newName: string) => Promise<{ success: boolean; message?: string }>;
   userId?: string;
+  toast: (options: { title: string; description?: string; variant?: "default" | "destructive" }) => void;
 }
 
-const HeroTitle = ({ isMyPlansView, activeSquad, onRename, userId }: HeroTitleProps) => {
+const HeroTitle = ({ isMyPlansView, activeSquad, onRename, userId, toast }: HeroTitleProps) => {
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -63,7 +64,10 @@ const HeroTitle = ({ isMyPlansView, activeSquad, onRename, userId }: HeroTitlePr
       setEditing(false);
       return;
     }
-    await onRename(activeSquad.id, editName.trim());
+    const result = await onRename(activeSquad.id, editName.trim());
+    if (!result.success) {
+      toast({ title: "Error", description: result.message || "Failed to rename squad", variant: "destructive" });
+    }
     setEditing(false);
   };
 
@@ -387,6 +391,7 @@ const DashboardContent = () => {
                 activeSquad={squads.find((s) => s.id === activeView)}
                 onRename={renameSquad}
                 userId={user?.id}
+                toast={toast}
               />
               <p className="mt-2 text-sm font-medium tracking-widest uppercase text-primary-foreground/50" style={{ fontFamily: "var(--font-body)" }}>
                 IRL Hangouts

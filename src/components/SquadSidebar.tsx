@@ -96,7 +96,7 @@ interface SquadSidebarProps {
   onCreateSquad: (name: string, inviteCode: string) => Promise<void>;
   onDeleteSquad: (squadId: string) => Promise<void>;
   onJoinSquad: (code: string) => Promise<{ success: boolean; message: string }>;
-  onRenameSquad?: (squadId: string, newName: string) => Promise<void>;
+  onRenameSquad?: (squadId: string, newName: string) => Promise<{ success: boolean; message?: string }>;
 }
 
 const SquadSidebar = ({
@@ -199,8 +199,12 @@ const SquadSidebar = ({
   const handleRenameSquad = async () => {
     if (!renameSquad || !renameSquadName.trim() || !onRenameSquad) return;
     setRenamingSquad(true);
-    await onRenameSquad(renameSquad.id, renameSquadName.trim());
+    const result = await onRenameSquad(renameSquad.id, renameSquadName.trim());
     setRenamingSquad(false);
+    if (!result.success) {
+      toast({ title: "Error", description: result.message || "Failed to rename squad", variant: "destructive" });
+      return;
+    }
     setRenameSquad(null);
     setRenameSquadName("");
   };

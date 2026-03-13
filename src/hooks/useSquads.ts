@@ -208,17 +208,18 @@ export const useSquads = (userId: string | undefined) => {
     await loadSquads();
   }, [userId, loadSquads]);
 
-  const renameSquad = useCallback(async (squadId: string, newName: string) => {
-    if (!userId || !newName.trim()) return;
+  const renameSquad = useCallback(async (squadId: string, newName: string): Promise<{ success: boolean; message?: string }> => {
+    if (!userId || !newName.trim()) return { success: false, message: "Invalid input" };
     const { error } = await supabase
       .from("squads")
       .update({ name: newName.trim() })
       .eq("id", squadId);
     if (error) {
       console.error("Rename squad error:", error);
-      return;
+      return { success: false, message: "Failed to rename squad. You may not have permission." };
     }
     await loadSquads();
+    return { success: true };
   }, [userId, loadSquads]);
 
   const joinSquadByCode = useCallback(async (code: string): Promise<{ success: boolean; message: string }> => {

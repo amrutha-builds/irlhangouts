@@ -526,6 +526,46 @@ const SquadSidebar = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* New squad dialog */}
+      <Dialog open={showNewSquad} onOpenChange={setShowNewSquad}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Create a New Squad</DialogTitle>
+            <DialogDescription>Start a new crew and invite your friends.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <input
+              type="text"
+              placeholder="Squad name (e.g. Weekend Warriors)"
+              value={newSquadName}
+              onChange={(e) => {
+                setNewSquadName(e.target.value);
+                setNewSquadCode(generateCode(e.target.value));
+              }}
+              autoFocus
+              className="w-full rounded-xl border border-input bg-card px-4 py-2.5 text-sm text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <div>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">Invite Code</label>
+              <input
+                type="text"
+                placeholder="Auto-generated"
+                value={newSquadCode}
+                onChange={(e) => setNewSquadCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+                className="w-full rounded-xl border border-input bg-card px-4 py-2.5 text-sm font-mono text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            <button
+              onClick={handleCreateSquad}
+              disabled={!newSquadName.trim() || creatingSquad}
+              className="w-full rounded-xl bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              {creatingSquad ? "Creating..." : "Create Squad"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

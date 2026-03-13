@@ -92,6 +92,7 @@ interface SquadSidebarProps {
   onExitSquad: (squadId: string) => Promise<void>;
   onRejoinSquad: (squadId: string) => Promise<void>;
   onCreateSquad: (name: string, inviteCode: string) => Promise<void>;
+  onDeleteSquad: (squadId: string) => Promise<void>;
 }
 
 const SquadSidebar = ({

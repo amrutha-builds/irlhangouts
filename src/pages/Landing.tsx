@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, ArrowRight, Copy, Check, Users } from "lucide-react";
+import { Sparkles, ArrowRight, Copy, Check, Users, Plus, LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Landing = () => {
   const { user } = useAuth();
@@ -14,11 +13,11 @@ const Landing = () => {
   const [codeError, setCodeError] = useState("");
   const [copied, setCopied] = useState(false);
   const [created, setCreated] = useState(false);
+  const [activePanel, setActivePanel] = useState<"none" | "create" | "join">("none");
 
-  // Generate a suggested invite code from squad name
   useEffect(() => {
     const name = squadName.trim();
-    if (!name) {setInviteCode("");return;}
+    if (!name) { setInviteCode(""); return; }
     const base = name.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
     const suffix = Math.floor(1000 + Math.random() * 9000);
     setInviteCode(base ? `${base}${suffix}` : "");
@@ -32,8 +31,8 @@ const Landing = () => {
   const handleCreateSquad = (e: React.FormEvent) => {
     e.preventDefault();
     const code = inviteCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-    if (code.length < 4) {setCodeError("Code must be at least 4 characters");return;}
-    if (code.length > 20) {setCodeError("Code must be 20 characters or less");return;}
+    if (code.length < 4) { setCodeError("Code must be at least 4 characters"); return; }
+    if (code.length > 20) { setCodeError("Code must be 20 characters or less"); return; }
     if (!squadName.trim()) return;
     sessionStorage.setItem("pending_squad", JSON.stringify({ name: squadName.trim(), invite_code: code }));
     setInviteCode(code);
@@ -43,7 +42,7 @@ const Landing = () => {
   const handleJoinSquad = (e: React.FormEvent) => {
     e.preventDefault();
     const code = joinCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-    if (code.length < 4) {setCodeError("Code must be at least 4 characters");return;}
+    if (code.length < 4) { setCodeError("Code must be at least 4 characters"); return; }
     sessionStorage.setItem("join_squad_code", code);
     navigate("/auth");
   };
@@ -61,7 +60,6 @@ const Landing = () => {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="flex w-full max-w-sm flex-col items-center gap-6 text-center">
-          
           <span className="text-5xl">🎉</span>
           <div>
             <h2 className="text-2xl font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
@@ -84,8 +82,8 @@ const Landing = () => {
             Sign Up to Continue <ArrowRight className="h-4 w-4" />
           </button>
         </motion.div>
-      </div>);
-
+      </div>
+    );
   }
 
   return (
@@ -93,8 +91,8 @@ const Landing = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex w-full max-w-md flex-col items-center gap-8">
-        
+        className="flex w-full max-w-lg flex-col items-center gap-10">
+
         {/* Header */}
         <div className="flex flex-col items-center gap-3 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
@@ -106,69 +104,141 @@ const Landing = () => {
             <Sparkles className="h-4 w-4 text-primary" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
-            Let's Hang IRL          
+            Let's Hang IRL
           </h1>
-          <p className="text-sm text-muted-foreground">Discover events, RSVP with your gang, and never miss a chance to hang IRL✨</p>
+          <p className="max-w-xs text-sm text-muted-foreground">
+            Plan events with your crew. Create a squad, invite friends, and never miss a hangout ✨
+          </p>
         </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="create" className="w-full" onValueChange={() => setCodeError("")}>
-          <TabsList className="grid w-full grid-cols-2 rounded-xl">
-            <TabsTrigger value="create" className="rounded-lg">Create Squad</TabsTrigger>
-            <TabsTrigger value="join" className="rounded-lg">Join Squad</TabsTrigger>
-          </TabsList>
+        {/* Three clear pathways */}
+        <div className="flex w-full flex-col gap-3">
 
-          <TabsContent value="create" className="mt-4">
-            <form onSubmit={handleCreateSquad} className="space-y-4">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">Squad Name</label>
-                <input
-                  type="text" value={squadName} onChange={(e) => setSquadName(e.target.value)}
-                  placeholder="The Fab Five" maxLength={50} required autoFocus
-                  className="w-full rounded-xl border border-border bg-card px-4 py-3 text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                
+          {/* Option 1: Create a Squad */}
+          <motion.div layout className="w-full">
+            <button
+              onClick={() => { setActivePanel(activePanel === "create" ? "none" : "create"); setCodeError(""); }}
+              className={`flex w-full items-center gap-4 rounded-2xl border p-5 text-left transition-all ${
+                activePanel === "create"
+                  ? "border-primary bg-primary/5 shadow-md"
+                  : "border-border bg-card hover:border-primary/40 hover:shadow-sm"
+              }`}
+            >
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                <Plus className="h-6 w-6 text-primary" />
               </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">Invite Code</label>
-                <input
-                  type="text" value={inviteCode}
-                  onChange={(e) => {setInviteCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));setCodeError("");}}
-                  maxLength={20} required
-                  className="w-full rounded-xl border border-border bg-card px-4 py-3 text-center text-lg font-medium tracking-widest uppercase text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Create an invite code" />
-                
-                {codeError && <p className="mt-1 text-sm text-destructive">{codeError}</p>}
+              <div className="flex-1">
+                <p className="font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>Start a New Squad</p>
+                <p className="text-xs text-muted-foreground">Create a group & get an invite code to share</p>
               </div>
-              <button type="submit" className="w-full rounded-xl bg-primary py-3 font-medium text-primary-foreground hover:bg-primary/90">
-                Create Squad ✨
-              </button>
-            </form>
-          </TabsContent>
+              <ArrowRight className={`h-4 w-4 text-muted-foreground transition-transform ${activePanel === "create" ? "rotate-90" : ""}`} />
+            </button>
 
-          <TabsContent value="join" className="mt-4">
-            <form onSubmit={handleJoinSquad} className="space-y-4">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">Invite Code</label>
-                <input
-                  type="text" value={joinCode}
-                  onChange={(e) => {setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));setCodeError("");}}
-                  maxLength={20} required autoFocus
-                  className="w-full rounded-xl border border-border bg-card px-4 py-3 text-center text-lg font-medium tracking-widest uppercase text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Enter Invite code" />
-                
-                {codeError && <p className="mt-1 text-sm text-destructive">{codeError}</p>}
-              </div>
-              <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-medium text-primary-foreground hover:bg-primary/90">
-                Join Squad <ArrowRight className="h-4 w-4" />
-              </button>
-            </form>
-          </TabsContent>
-        </Tabs>
+            {activePanel === "create" && (
+              <motion.form
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                onSubmit={handleCreateSquad}
+                className="mt-2 space-y-3 rounded-2xl border border-border bg-card p-5"
+              >
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">Squad Name</label>
+                  <input
+                    type="text" value={squadName} onChange={(e) => setSquadName(e.target.value)}
+                    placeholder="e.g. The Fab Five" maxLength={50} required autoFocus
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">Invite Code</label>
+                  <input
+                    type="text" value={inviteCode}
+                    onChange={(e) => { setInviteCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")); setCodeError(""); }}
+                    maxLength={20} required
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-center text-lg font-medium tracking-widest uppercase text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="Auto-generated"
+                  />
+                  {codeError && <p className="mt-1 text-sm text-destructive">{codeError}</p>}
+                </div>
+                <button type="submit" className="w-full rounded-xl bg-primary py-3 font-medium text-primary-foreground hover:bg-primary/90">
+                  Create Squad ✨
+                </button>
+              </motion.form>
+            )}
+          </motion.div>
 
-        <button onClick={() => navigate("/auth")} className="text-sm font-medium text-muted-foreground hover:text-foreground">
-          Already have a squad? Sign in
-        </button>
+          {/* Option 2: Join a Squad */}
+          <motion.div layout className="w-full">
+            <button
+              onClick={() => { setActivePanel(activePanel === "join" ? "none" : "join"); setCodeError(""); }}
+              className={`flex w-full items-center gap-4 rounded-2xl border p-5 text-left transition-all ${
+                activePanel === "join"
+                  ? "border-primary bg-primary/5 shadow-md"
+                  : "border-border bg-card hover:border-primary/40 hover:shadow-sm"
+              }`}
+            >
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent/40">
+                <Users className="h-6 w-6 text-accent-foreground" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>Join a Squad</p>
+                <p className="text-xs text-muted-foreground">Got an invite code? Enter it here</p>
+              </div>
+              <ArrowRight className={`h-4 w-4 text-muted-foreground transition-transform ${activePanel === "join" ? "rotate-90" : ""}`} />
+            </button>
+
+            {activePanel === "join" && (
+              <motion.form
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                onSubmit={handleJoinSquad}
+                className="mt-2 space-y-3 rounded-2xl border border-border bg-card p-5"
+              >
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">Invite Code</label>
+                  <input
+                    type="text" value={joinCode}
+                    onChange={(e) => { setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")); setCodeError(""); }}
+                    maxLength={20} required autoFocus
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-center text-lg font-medium tracking-widest uppercase text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="Enter code"
+                  />
+                  {codeError && <p className="mt-1 text-sm text-destructive">{codeError}</p>}
+                </div>
+                <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-medium text-primary-foreground hover:bg-primary/90">
+                  Join Squad <ArrowRight className="h-4 w-4" />
+                </button>
+              </motion.form>
+            )}
+          </motion.div>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 py-1">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs font-medium text-muted-foreground">Already in a squad?</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          {/* Option 3: Sign In */}
+          <button
+            onClick={() => navigate("/auth")}
+            className="flex w-full items-center gap-4 rounded-2xl border border-border bg-card p-5 text-left transition-all hover:border-primary/40 hover:shadow-sm"
+          >
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-secondary">
+              <LogIn className="h-6 w-6 text-secondary-foreground" />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>Sign In</p>
+              <p className="text-xs text-muted-foreground">Jump back into your squad</p>
+            </div>
+            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
       </motion.div>
-    </div>);
-
+    </div>
+  );
 };
 
 export default Landing;

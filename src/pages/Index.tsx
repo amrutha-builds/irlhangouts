@@ -229,6 +229,16 @@ const DashboardContent = () => {
 
   return (
     <div className="flex min-h-screen w-full">
+      {user && (
+        <LocationOnboarding
+          open={showLocationOnboarding}
+          userId={user.id}
+          onComplete={(loc) => {
+            setUserLocation(loc);
+            setShowLocationOnboarding(false);
+          }}
+        />
+      )}
       <SquadSidebar
         squads={squads}
         activeView={activeView}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import heroImage from "@/assets/hero-girlfriends.jpg";
+import heroImage from "@/assets/hero-friends.jpg";
 import EventCard from "@/components/EventCard";
 import EventDetailDialog from "@/components/EventDetailDialog";
 import { Sparkles, RefreshCw } from "lucide-react";
@@ -242,7 +242,7 @@ const DashboardContent = () => {
         <div className="relative h-[320px] overflow-hidden">
           <img
             src={heroImage}
-            alt="Five girlfriends laughing together at golden hour"
+            alt="A diverse group of friends laughing together outdoors"
             className="h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-foreground/30 via-foreground/20 to-background" />
@@ -260,7 +260,7 @@ const DashboardContent = () => {
                 <Sparkles className="h-5 w-5 text-primary-foreground" />
               </div>
               <h1 className="text-4xl font-bold tracking-tight text-primary-foreground md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-                Girls' Night Agenda
+                IRL Hangouts
               </h1>
             </motion.div>
           </div>

@@ -32,6 +32,7 @@ interface Profile {
   display_name: string;
   emoji: string;
   personality_type: string | null;
+  location?: string | null;
 }
 
 const DashboardContent = () => {

@@ -18,7 +18,7 @@ const Landing = () => {
   // Generate a suggested invite code from squad name
   useEffect(() => {
     const name = squadName.trim();
-    if (!name) { setInviteCode(""); return; }
+    if (!name) {setInviteCode("");return;}
     const base = name.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
     const suffix = Math.floor(1000 + Math.random() * 9000);
     setInviteCode(base ? `${base}${suffix}` : "");
@@ -106,7 +106,7 @@ const Landing = () => {
             <Sparkles className="h-4 w-4 text-primary" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
-            Girlfriends Get Togethers    
+            Let's  Meet IRL          
           </h1>
           <p className="text-sm text-muted-foreground">Discover events, RSVP with your crew, and never miss a night out ✨</p>
         </div>

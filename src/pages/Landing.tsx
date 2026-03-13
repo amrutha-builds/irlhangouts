@@ -106,7 +106,7 @@ const Landing = () => {
             <Sparkles className="h-4 w-4 text-primary" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
-            Let's  Meet IRL          
+            Let's Hang IRL          
           </h1>
           <p className="text-sm text-muted-foreground">Discover events, RSVP with your crew, and never miss a night out ✨</p>
         </div>
